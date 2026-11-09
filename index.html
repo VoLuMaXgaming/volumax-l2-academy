@@ -1,0 +1,157 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#091728"><title>VoLuMaX L2 Academy — Live Navigator v1.3</title><style>
+
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#eff4fd;background:#071120;--gold:#e7bb68;--muted:#a8b8ca;--card:#0e1c31;--stroke:#344b67}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1c3150 0%,#071120 55%);line-height:1.48}main{max-width:960px;margin:auto;padding:12px 12px 70px}header{padding:24px 20px;background:linear-gradient(135deg,#0a1a2f,#172943);border:1px solid #806538;border-radius:18px;margin:3px 0 14px}header small{color:var(--gold);letter-spacing:.09em;font-weight:800}h1{margin:8px 0;font-size:clamp(27px,5vw,40px);line-height:1.1}h2{font-size:19px;margin:0 0 12px}h3{font-size:22px;line-height:1.2;margin:0}.sub{color:var(--muted)}.panel{border:1px solid var(--stroke);background:#102039e8;border-radius:16px;padding:16px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{font-size:13px;color:var(--muted);display:block;margin:0 0 6px}input,select{width:100%;background:#091728;color:#f1f6ff;border:1px solid #536c8a;padding:12px;border-radius:10px;font-size:15px}input[type=range]{padding:5px;accent-color:var(--gold)}.filter{margin:12px 0}.toggle{display:flex;flex-wrap:wrap;gap:7px}.toggle button{border:1px solid #62748e;background:#1c2c45;color:#d9e7f8;border-radius:22px;padding:10px 13px;font:inherit;cursor:pointer}.toggle button.selected{background:var(--gold);color:#0b1829;border-color:var(--gold);font-weight:750}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.nudge{background:#213650;border:1px solid #456080;border-radius:7px;color:#e8f1fc;padding:5px 10px}.note{padding:11px 12px;background:#25354b;border-left:3px solid var(--gold);border-radius:8px;color:#dbe7f3;font-size:13px}.mob{padding:16px;border:1px solid var(--stroke);border-radius:15px;background:#09172a;margin-top:12px}.pill{display:inline-flex;background:#243751;border-radius:7px;padding:4px 8px;margin:7px 5px 0 0;color:#e2ebf6;font-size:12px}.weak{background:#31403d;color:#cff5e9}.danger{background:#493334;color:#ffe0d8}.lvl{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.05em;margin-bottom:4px}.location{color:#a5bfd7;font-size:13px;margin-top:3px}.metrics{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-top:14px}.big{font-size:25px;color:var(--gold);font-weight:750}.tiny{font-size:12px;color:var(--muted)}.bar{margin:11px 0;height:10px;background:#30445e;border-radius:10px;overflow:hidden}.bar>div{height:100%;border-radius:10px;background:linear-gradient(90deg,#77c0d0,#efc978)}details{border-top:1px solid #314763;margin-top:14px;padding-top:10px}summary{cursor:pointer;list-style:none;color:#f0c77e;font-weight:750;padding:5px 0}summary::-webkit-details-marker{display:none}summary::after{content:'⌄';float:right}details[open]>summary::after{content:'⌃'}.lootgroup{border:1px solid #304966;border-radius:11px;overflow:hidden;margin:10px 0}.loothead{padding:8px 11px;background:#223957;color:#edc67e;font-weight:700}.lootrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 11px;border-top:1px solid #263a52;font-size:13px}.lootside{text-align:right;color:#efc67c;font-weight:750;white-space:nowrap}.lootamount{display:block;font-size:11px;color:var(--muted);font-weight:400}.icons{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}.tag{display:inline-flex;align-items:center;justify-content:center;width:25px;height:24px;border-radius:6px;background:#253b54;font-size:15px}.tag.keep{background:#214c40}.tag.sell{background:#51401f}.tag.clan{background:#353961}.explain{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.explain>span{font-size:12px;display:flex;gap:4px;align-items:center}.advice{background:#362b22;border:1px solid #745c37;padding:12px;border-radius:11px;margin-top:13px;font-size:13px}.source{display:inline-block;margin-top:10px;color:#a5cdfa;font-size:12px}.topline{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}.btn{background:#e8be75;border:0;color:#162035;padding:9px 13px;border-radius:9px;font-weight:800;cursor:pointer}.empty{padding:28px 10px;text-align:center;color:var(--muted)}footer{font-size:12px;color:var(--muted);padding:14px 4px}@media(max-width:560px){.controls{grid-template-columns:1fr}.panel{padding:14px}.grid{gap:9px}.lootrow{font-size:12px}}
+
+/* v06.1 Item icon + name + loot recommendation */
+.lootrow{grid-template-columns:minmax(0,1fr) minmax(66px,auto);align-items:center;padding:9px 10px;gap:9px;min-height:59px}
+.itemdata{display:flex;align-items:center;gap:10px;min-width:0}
+.itemart{width:43px;height:43px;flex:0 0 43px;border:1px solid #65728a;border-radius:9px;background:linear-gradient(145deg,#243653,#101a2b);display:flex;justify-content:center;align-items:center;overflow:hidden;box-shadow:inset 0 0 0 2px #111e31}
+.itemart img{display:block;width:36px;height:36px;object-fit:contain;image-rendering:pixelated}
+.itemart.mock{background:radial-gradient(circle,#3a465c,var(--paint));font-size:25px;opacity:.92}
+.itemart .offline{display:none;color:#bdc9d7;font-size:19px}.itemart.noimage .offline{display:block}
+.itemwords{min-width:0;flex:1}.itemname{overflow-wrap:anywhere;line-height:1.3;font-size:13px}
+.itemwords .icons{display:flex;margin:5px 0 0;gap:5px}.itemwords .tag{height:22px;width:25px;font-size:14px}
+.lootside{align-self:center;text-align:right;font-size:13px;min-width:63px}.lootamount{margin-top:3px}
+.icons-guide{margin-top:8px;padding:10px 12px;border:1px solid #3c536c;background:#0b192c;border-radius:9px;font-size:12px;color:#c0d0df}
+@media(min-width:650px){.itemname{font-size:14px}.itemart{width:47px;height:47px;flex-basis:47px}}
+
+.extra{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.status{padding:10px 12px;color:#cfdfed;font-size:12px;border:1px solid #405675;border-radius:10px;background:#0b192b}.status.error{color:#ffb9b9}.itemdata{display:flex;align-items:center;gap:11px;min-width:0}.itemart{width:46px;height:46px;min-width:46px;display:grid;place-items:center;border:1px solid #6e768b;background:linear-gradient(145deg,#3d3941,#142136);border-radius:9px;overflow:hidden}.itemart img{width:41px;height:41px;object-fit:contain;image-rendering:pixelated}.itemart .fallback{font-size:20px;color:#b8c4d9}.itemwords{min-width:0}.itemname{font-size:14px;font-weight:650;overflow-wrap:anywhere}.itemmeta{font-size:11px;color:#9fb1c9;margin-top:4px}.advice{margin-top:15px;padding:13px;border-radius:12px;background:#302920;border:1px solid #79603d;font-size:13px;line-height:1.5}.bigrow{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0;color:#d4e6f5}.bigrow b{color:#ebc47b}.loadmore{margin:14px auto;display:block;padding:11px 19px;border-radius:9px;background:#f0c77e;color:#152033;border:0;font-weight:850}.filtersummary{margin:5px 0 11px;color:#9fb9d5;font-size:12px}.loothead{font-size:14px}.lootrow{align-items:center;min-height:65px}.goalword{font-size:12px;letter-spacing:1px;color:#eac47c;font-weight:900}.mutedNotice{color:#95aac1;font-size:12px;padding:10px 3px}.links{display:flex;gap:12px;flex-wrap:wrap;margin-top:13px}.links a{color:#b8d9fa;font-size:12px}.footnote{font-size:12px;color:#aebed3}.itemlink{color:inherit;text-decoration:none}.itemlink:hover{text-decoration:underline}#level{font-weight:800}.toggle button{font-size:13px}details summary{font-size:16px}#cards .mob{margin-top:15px}.noticewide{border:1px solid #69583a;border-radius:11px;background:#242622;padding:11px 13px;color:#dccba9;font-size:12px;margin:10px 0}.rangeout{color:#f1ca85;font-weight:850}.mob h3{font-size:23px}.filter input[type=search]{width:100%}footer{line-height:1.5}@media(max-width:540px){.mob{padding:13px}.lootrow{padding:9px 8px;gap:7px}.itemart{width:42px;height:42px;min-width:42px}.itemart img{width:39px;height:39px}.lootside{font-size:12px}.itemname{font-size:12px}.bigrow{gap:10px;font-size:12px}}
+.itemart .fallback{color:#e2bf7e;font-weight:800;font-size:20px}.itemart img[hidden]{display:none}</style></head><body><main>
+<header><small>⚔️ VoLuMaX L2 ACADEMY</small><h1>LEVELING NAVIGATOR</h1><div class="sub">V1.5 LIVE · Classic Interlude · XP / SP / Adena ×3 · LVL 1–80 · Discord Activity foundation</div></header>
+<section class="panel"><div class="extra"><h2>Find your hunting route</h2><span class="rangeout" id="chapter">1–80 LVL</span></div><div class="grid"><div><label>Character level</label><input type="number" id="level" min="1" max="80" value="28"></div><div><label>Playstyle</label><select id="klass"><option value="dwarf">Dwarf – Spoiler / Crafter</option><option value="fighter">Damage Dealer – Fighter / Archer</option><option value="mage">Mage – Magic Damage</option><option value="support">Support – Healer / Buffer</option></select></div></div><div class="filter"><input type="range" id="slider" min="1" max="80" value="28"></div>
+<div class="filter"><label>Your goal</label><div class="toggle" id="goals"><button data-v="xp" class="selected">⚔️ XP</button><button data-v="adena">💰 Adena</button><button data-v="spoil">⛏️ Spoil</button></div></div>
+<div class="filter"><label>Monster type</label><select id="monsterType"><option value="normal">⚔️ Normal Monsters</option><option value="boss">🐉 All Raid / Grand Bosses</option><option value="RaidBoss">🐲 Raid Boss only</option><option value="GrandBoss">👑 Grand Boss only</option><option value="all">All monsters and bosses</option></select></div><div class="filter"><label>Hunting style</label><div class="toggle" id="modes"><button data-v="solo" class="selected">Solo</button><button data-v="party">Party</button></div></div>
+<div class="filter"><label>Monster behaviour</label><div class="toggle" id="behaviors"><button data-v="all" class="selected">All</button><button data-v="passive">Non-aggressive</button><button data-v="aggressive">Aggressive</button></div></div>
+<div class="grid filter"><div><label>Territory / region</label><select id="region"><option value="all">All territories</option></select></div><div><label>Hunting zone</label><select id="zone"><option value="all">All hunting zones</option></select></div></div><div class="tiny" id="regionhint">Choose a territory first to shorten the zone list.</div>
+<div class="filter"><label>Level selection</label><div class="toggle" id="ranges"><button data-v="near" class="selected">Nearby (±2 LVL)</button><button data-v="all">All levels</button></div></div>
+<div class="grid filter"><div><label>Loot category</label><select id="itemCategory"><option value="all">All item types</option><option value="Weapons">⚔️ Weapons</option><option value="Weapon parts">🧩 Weapon parts</option><option value="Armor">🛡️ Armor</option><option value="Jewelry">💍 Jewelry</option><option value="Armor parts">🧩 Armor / jewelry parts</option><option value="Recipes">📜 Recipes</option><option value="Enchants">✨ Normal Enchants</option><option value="Blessed Enchants">🌟 Blessed Enchants</option><option value="Materials">🧱 Materials</option><option value="Consumables">🧪 Consumables</option><option value="Spellbooks">📖 Spellbooks</option><option value="Other">🎒 Other items</option></select></div><div><label>Item grade</label><select id="itemGrade"><option value="all">All grades</option><option value="none">No Grade</option><option value="d">D Grade</option><option value="c">C Grade</option><option value="b">B Grade</option><option value="a">A Grade</option><option value="s">S Grade</option><option value="unknown">Unspecified grade</option></select></div></div>
+<div class="tiny">Item filters search DROP and SPOIL together. Blessed Enchants are separated from normal enchants. Only matching loot is shown. Recipes without an explicit grade stay under “Unspecified grade”.</div>
+<div class="filter"><label>Loot source</label><select id="lootSource"><option value="all">Drop + Spoil</option><option value="drop">📦 Drop only</option><option value="spoil">⛏️ Spoil only</option></select></div>
+<div class="filter"><label>Find monster or loot item</label><input type="search" id="search" placeholder="e.g. Enchant Weapon, Varnish, Stem"></div>
+<div class="status" id="status">Loading live monster, drop and spoil data…</div>
+</section>
+<section class="panel"><div class="extra"><h2 id="summary">Monster results</h2><button class="nudge" id="reset">Reset filters</button></div><div class="noticewide">📚 <b>Classic Interlude reference:</b> XP ×3, SP ×3 and Adena amount ×3. Drop and spoil percentages remain classic ×1. These are aCis reference data; boss drop rates exceeding 100 are source rates, not ordinary probabilities. Not independently verified in-game.</div><div class="explain"><span><span class="tag keep">📦</span> KEEP</span><span><span class="tag sell">💰</span> SELL</span><span><span class="tag clan">🏰</span> CLAN</span><span class="tiny">CLAN / SELL on equipment means consider saving for the clan or selling. Exact best-in-grade items are not ranked yet. Icons are linked by item ID and loaded from an external image source via Supabase.</span></div><div id="cards"></div><button id="more" class="loadmore" hidden>Show more monsters</button></section>
+<section class="panel"><h2>📚 Data & accuracy</h2><p class="footnote">Monster information, item identifiers, drop and spoil from the <a href="https://docs.l2api.dev/" target="_blank" rel="noopener">Interlude API</a>, stored in the VoLuMaX Supabase database. Item portraits are requested through our Supabase image gateway using the original L2 icon filenames; image ownership belongs to the original rights holders. Missing artwork is shown as an unavailable icon rather than an invented match.</p><p class="footnote">An unlisted hunting location means the source has no confirmed location entry. Some special or quest monsters may appear in the raw Interlude dataset; curated route recommendations are a later phase.</p></section>
+<footer>VoLuMaX Gaming · L2 Academy · Live Navigator v1.6 · fan-made project · Not affiliated with NCSoft</footer>
+</main><script>
+const URL='https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const ICON_ROOT='https://ydbvqkccuwgskrcdosxv.supabase.co/functions/v1/item-icon?file=';
+const ICON_FALLBACK_ROOT='https://resources.elmorelab.com/images/';
+const $=x=>document.getElementById(x);const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:3});
+const fmtPct=n=>Number(n)>100?('rate '+fmt(n)+' (source)'):(Number(n||0).toLocaleString('en-US',{maximumFractionDigits:5})+'%');
+let mobs=[],loot=[],spawns=[],spawnMap=new Map(),current=[],loaded=false,shown=10, state={goal:'xp',mode:'solo',behavior:'all',range:'near'};
+async function db(path){const r=await fetch(URL+path,{headers:{'apikey':KEY,'Accept':'application/json'}});if(!r.ok)throw Error('Supabase HTTP '+r.status+' ('+path.split('?')[0]+')');return await r.json()}
+async function paged(table,filter,sort='id.asc'){
+ const pageSize=800, result=[];
+ for(let offset=0;offset<50000;offset+=pageSize){
+   const batch=await db(`${table}?select=*&${filter}&order=${sort}&limit=${pageSize}&offset=${offset}`);
+   result.push(...batch);
+   if($('status')) $('status').textContent=`🔄 Loading ${table}: ${result.length.toLocaleString()} records`;
+   if(batch.length<pageSize)return result;
+ }
+ throw new Error('Dataset exceeded pagination limit');
+}
+async function allLoot(){return paged('item_farming_sources','monster_level=gte.1&monster_level=lte.100','monster_id.asc,loot_type.asc,item_id.asc,min_amount.asc,max_amount.asc')}
+function byType(m,t){return (lootMap.get(m.id)||[]).filter(x=>x.loot_type===t).sort((a,b)=>+b.chance_percent-+a.chance_percent)}
+let lootMap=new Map();
+const cats={Materials:'🧱 Materials',Recipes:'📜 Recipes',Armor:'🛡️ Armor',Jewelry:'💍 Jewelry','Armor parts':'🧩 Armor / jewelry parts',Weapons:'⚔️ Weapons','Weapon parts':'🧩 Weapon parts',Enchants:'✨ Normal Enchants','Blessed Enchants':'🌟 Blessed Enchants',Spellbooks:'📖 Spellbooks',Consumables:'🧪 Consumables',Adena:'💰 Adena',Other:'🎒 Other'};
+function category(i){
+ if(i.loot_type==='adena')return 'Adena';
+ const n=(i.item_name||'').toLowerCase(),t=(i.category||'').toLowerCase();
+ if(n.startsWith('blessed scroll: enchant')||t.startsWith('bless_scrl_enchant'))return 'Blessed Enchants';
+ if(/^(scroll:\s*)?enchant (weapon|armor)|^scroll: enchant (weapon|armor)/i.test(n)||t.startsWith('scrl_enchant'))return 'Enchants';
+ if(n.startsWith('recipe:')||t==='recipe')return 'Recipes';
+ if(/spellbook|spell book|amulet:|blueprint:/i.test(n)||t==='spellbook')return 'Spellbooks';
+ if(/(head|blade|shaft|edge|handle|fragment|stock|piece|mold|mould)/i.test(n)&&/(sword|dagger|bow|staff|hammer|mace|club|axe|spear|knife|buzdygan|gladius|fist|spike|arbalest|weapon)/i.test(n))return 'Weapon parts';
+ if(/(lining|fabric|pattern|tempering|texture|shell|design|chain|gemstone|stone|part)/i.test(n)&&/(gloves|helmet|armor|boots|tunic|stockings|shield|gaiters|breastplate|robe|ring|necklace|earring|jewel|jewelry)/i.test(n))return 'Armor parts';
+ if(/ring|necklace|earring|jewel|jewelry/i.test(n)&&t!=='material')return 'Jewelry';
+ if(t==='weapon')return 'Weapons';
+ if(t==='armor')return 'Armor';
+ if(/weapon|sword|dagger|bow|staff|hammer|mace|club|axe|spear|knife|buzdygan|gladius/i.test(n)&&t!=='material')return 'Weapons';
+ if(/armor|helmet|shield|gloves|boots|stockings|gaiters|tunic|robe|shirt|leggings|shoes|pants/i.test(n)&&t!=='material')return 'Armor';
+ if(/potion|scroll|shot|antidote|bandage|herb|elixir/i.test(n))return 'Consumables';
+ if(t==='material'||/stem|varnish|iron ore|silver nugget|coal|charcoal|animal skin|animal bone|thread|suede|steel|leather|ore|bone/i.test(n))return 'Materials';
+ return 'Other'
+}
+// An item's stored grade is authoritative, except explicit '(Grade X)' item names
+// such as Enchant scrolls. A recipe with unknown grade is not mislabeled No Grade.
+function itemGrade(i){
+ const n=i.item_name||'',c=category(i);
+ const explicit=n.match(/\bGrade\s*([DCBAS])\b/i);
+ if(explicit)return explicit[1].toLowerCase();
+ const g=String(i.grade||'').toLowerCase();
+ if(['d','c','b','a','s'].includes(g))return g;
+ if(c==='Recipes'||c==='Armor parts'||c==='Weapon parts')return 'unknown';
+ return g==='none'?'none':'unknown';
+}
+function itemFiltersActive(){return $('itemCategory').value!=='all'||$('itemGrade').value!=='all'||$('lootSource').value!=='all'}
+function itemMatches(i){
+ const cat=$('itemCategory').value,grade=$('itemGrade').value,source=$('lootSource').value;
+ if(i.loot_type==='adena')return false;
+ return (cat==='all'||category(i)===cat)&&(grade==='all'||itemGrade(i)===grade)&&(source==='all'||i.loot_type===source);
+}
+function visibleLoot(m,type){const a=byType(m,type);return itemFiltersActive()?a.filter(itemMatches):a}
+function tagAdvice(i){const c=category(i);
+ if(c==='Recipes'||c==='Weapon parts'||c==='Armor parts'||c==='Blessed Enchants')return ['clan'];
+ if(c==='Materials')return ['keep','sell'];
+ if(c==='Weapons'||c==='Armor'||c==='Jewelry')return ['clan','sell'];
+ return ['sell']
+}
+function art(i){const f=(i.icon_file||'').toLowerCase();const safe=/^[a-z0-9_-]+\.png$/.test(f);const url=safe?ICON_ROOT+encodeURIComponent(f):'';const v=url?`<img loading="lazy" alt="${esc(i.item_name)}" src="${esc(url)}" data-alt-src="${esc(ICON_FALLBACK_ROOT+f.replace(/\.png$/i,'.jpg'))}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.altSrc}else{this.hidden=true;this.parentElement.querySelector('.fallback').hidden=false}"><span class="fallback" hidden>?</span>`:'<span class="fallback">?</span>';return `<div class="itemart" title="${esc(i.item_name)} · ID ${i.item_id} · ${esc(f||'No icon file')}">${v}</div>`}
+function lootSection(m,type,isOpen){let a=visibleLoot(m,type);let groups=new Map();for(let i of a){let c=category(i);if(!groups.has(c))groups.set(c,[]);groups.get(c).push(i)}let order=['Adena','Materials','Recipes','Enchants','Blessed Enchants','Jewelry','Armor','Armor parts','Weapon parts','Weapons','Spellbooks','Consumables','Other'];return `<details ${isOpen?'open':''}><summary>${type==='spoil'?'⛏️ Spoil loot':'📦 Drop loot'} <span class="tiny">(${a.length} entries)</span></summary>${a.length?order.filter(c=>groups.has(c)).map(c=>`<div class="lootgroup"><div class="loothead">${cats[c]}</div>${groups.get(c).map(i=>`<div class="lootrow"><div class="itemdata">${art(i)}<div class="itemwords"><div class="itemname"><a class="itemlink" href="https://l2api.dev/api/interlude/items/${i.item_id}" target="_blank" rel="noopener">${esc(i.item_name)}</a></div><div class="icons">${tagAdvice(i).map(t=>`<span class="tag ${t}" title="${t.toUpperCase()} — provisional">${{keep:'📦',sell:'💰',clan:'🏰'}[t]}</span>`).join('')}</div></div></div><div class="lootside">${fmtPct(i.chance_percent)}<span class="lootamount">× ${fmt(i.loot_type==='adena'?i.server_min_amount:i.min_amount)}${Number(i.max_amount)!==Number(i.min_amount)?'–'+fmt(i.loot_type==='adena'?i.server_max_amount:i.max_amount):''}</span></div></div>`).join('')}</div>`).join(''):'<div class="mutedNotice">No '+type+' entries in the Interlude source for this monster.</div>'}</details>`}
+function expectedA(m){return byType(m,'adena').reduce((s,i)=>s+((+i.server_min_amount + +i.server_max_amount)/2)*(+i.chance_percent)/100,0)}
+function filter(){
+ let level=+$('level').value||1;level=Math.max(1,Math.min(80,level));
+ const q=$('search').value.toLowerCase().trim(),zone=$('zone').value,territory=$('region').value,monsterType=$('monsterType').value;
+ const active=itemFiltersActive();
+ let found=mobs.filter(m=>{
+  if(monsterType==='normal'&&m.npc_type!=='Monster')return false;
+  if(monsterType==='boss'&&!['RaidBoss','GrandBoss'].includes(m.npc_type))return false;
+  if(['RaidBoss','GrandBoss'].includes(monsterType)&&m.npc_type!==monsterType)return false;
+  if(state.range!=='all'&&Math.abs(m.level-level)>2)return false;
+  if(territory!=='all'&&territoryFor(m.region)!==territory)return false;
+  if(zone!=='all'&&m.hunting_zone!==zone)return false;
+  if(state.behavior!=='all'&&(state.behavior==='aggressive')!==m.aggressive)return false;
+  const entries=lootMap.get(m.id)||[];
+  if(active&&!entries.some(itemMatches))return false;
+  if(q&&!m.name.toLowerCase().includes(q)&&!entries.some(i=>i.item_name.toLowerCase().includes(q)&&(!active||itemMatches(i))))return false;
+  return true;
+ });
+ found.sort((a,b)=>{const score=m=>state.goal==='adena'?expectedA(m):state.goal==='spoil'?visibleLoot(m,'spoil').reduce((s,x)=>s+(+x.chance_percent),0):(+m.server_xp||0)/Math.max(1,+m.hp||1);return score(b)-score(a)||Math.abs(a.level-level)-Math.abs(b.level-level)});
+ return found;
+}
+function playstyleAdvice(){const c=$('klass').value;return c==='dwarf'?'Dwarf: prioritize useful materials and spoil targets; crafting profit depends on recipes and market prices.':c==='fighter'?'Damage dealer: compare kill speed, safety and Soulshot or arrow costs.':c==='mage'?'Mage: consider MP sustain, cast safety and resistance.':'Support: party composition and healing or buff costs affect results.'}
+function card(m){let all=(lootMap.get(m.id)||[]);const isBoss=['RaidBoss','GrandBoss'].includes(m.npc_type);const bossSpawns=spawnMap.get(m.id)||[];const s0=bossSpawns[0];const spawnInfo=isBoss?`<div class="noticewide">🐉 <b>${m.npc_type==='GrandBoss'?'Grand Boss':'Raid Boss'}</b> · ${bossSpawns.length} spawn point(s)${s0?' · coordinates: '+s0.x+', '+s0.y+', '+s0.z:''}${s0&&Number(s0.respawn_delay_seconds)>0?' · Respawn: '+(s0.respawn_delay_seconds/3600).toFixed(1)+'h'+(s0.respawn_random_seconds?' ± '+(s0.respawn_random_seconds/3600).toFixed(1)+'h':''):''}. <span class="tiny">Classic source values; live availability not tracked.</span></div>`:'';let xpHp=(+m.server_xp/Math.max(1,+m.hp));return `<article class="mob"><div class="goalword">${state.goal==='spoil'?'⛏️ SPOIL SOURCE':state.goal==='adena'?'💰 ADENA FARM':'⚔️ XP EFFICIENCY'}</div><h3>${esc(m.name)}</h3>${spawnInfo}<div class="location">📍 ${m.hunting_zone?esc(m.hunting_zone)+(m.region?' · '+esc(m.region):''):(m.region?'Region only: '+esc(m.region)+' (exact zone unknown)':(isBoss&&s0?.region?'Region only: '+esc(s0.region)+' (exact zone unknown)':'Location not confirmed'))}</div><div><span class="pill">LVL ${m.level}</span><span class="pill ${m.aggressive?'danger':''}">${m.aggressive?'Aggressive':'Non-aggressive'}</span><span class="pill">${isBoss?(m.npc_type==='GrandBoss'?'Grand Boss':'Raid Boss'):(state.mode==='solo'?'Solo':'Party')}</span></div><div class="bigrow"><span>❤️ HP <b>${fmt(m.hp)}</b></span><span>✨ XP ×3 <b>${fmt(m.server_xp)}</b></span><span>📜 SP ×3 <b>${fmt(m.server_sp ?? (+m.base_sp * 3))}</b></span><span>⛏️ Spoils <b>${visibleLoot(m,'spoil').length}</b></span></div><div class="metrics" style="${state.goal==='spoil'?'display:none':''}"><div class="big">${state.goal==='adena'?(isBoss?'Adena depends on boss loot rules':'≈ '+fmt(Math.round(expectedA(m)))+' Adena / kill'):state.goal==='spoil'?'':xpHp.toFixed(2)+' XP / HP'}</div></div>${lootSection(m,'drop',true)}${lootSection(m,'spoil',state.goal==='spoil')}<div class="advice">🎓 <b>Academy advice:</b> ${esc(playstyleAdvice())} ${state.goal==='xp'?'Compare XP/HP with time to kill and your class.':state.goal==='adena'?'Adena is ×3 in amount, but chance is unchanged. This is an expectation per kill, not Adena/hour.':'Check spoil materials and kill speed; percentages are classic reference values.'} ${!m.hunting_zone?'Zone needs manual verification.':''} ${state.mode==='party'?'Party bonuses and XP split are not modeled.':''}</div><div class="links"><a href="https://l2api.dev/api/interlude/monsters/${m.id}" target="_blank" rel="noopener">🔎 Original Interlude monster details</a></div></article>`}
+function render(){if(!loaded)return;current=filter();$('summary').textContent=`${current.length} targets · ${state.goal==='xp'?'XP efficiency':state.goal==='adena'?'Adena farming':'Spoil farming'}`;$('cards').innerHTML=current.length?current.slice(0,shown).map(card).join(''):'<div class="mutedNotice">No matching targets. Adjust your monster type, level or loot filters.</div>';$('more').hidden=current.length<=shown;$('more').textContent=`Show more (${shown} / ${current.length})`}
+function toggle(id,field){$(id).addEventListener('click',e=>{let b=e.target.closest('button[data-v]');if(!b)return;state[field]=b.dataset.v;$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));shown=10;render()})}
+toggle('goals','goal');toggle('modes','mode');toggle('behaviors','behavior');toggle('ranges','range');
+$('level').addEventListener('input',()=>{$('slider').value=$('level').value;shown=10;render()});$('slider').addEventListener('input',()=>{$('level').value=$('slider').value;shown=10;render()});$('region').addEventListener('change',()=>{fillZones();shown=10;render()});for(let id of ['zone','search','klass','itemCategory','itemGrade','lootSource','monsterType'])$(id).addEventListener(id==='search'?'input':'change',()=>{shown=10;render()});$('monsterType').addEventListener('change',()=>{if($('monsterType').value!=='normal'){state.range='all';$('ranges').querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b.dataset.v==='all'));}shown=10;render()});$('more').onclick=()=>{shown+=10;render()};$('reset').onclick=()=>{state={goal:'xp',mode:'solo',behavior:'all',range:'near'};$('level').value=28;$('slider').value=28;$('region').value='all';fillZones();$('zone').value='all';$('search').value='';$('itemCategory').value='all';$('itemGrade').value='all';$('lootSource').value='all';$('monsterType').value='normal';for(let [id,k] of [['goals','goal'],['modes','mode'],['behaviors','behavior'],['ranges','range']])$(id).querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b.dataset.v===state[k]));shown=10;render()};
+
+// Territory grouping is presentation only; original Interlude region names stay intact.
+const territoryMap={
+  'Gludin Village':'Gludio Territory','Town of Gludio':'Gludio Territory',
+  'Town of Dion':'Dion Territory','Town of Giran':'Giran Territory',
+  'Town of Oren':'Oren Territory','Town of Aden':'Aden Territory',
+  'Town of Schuttgart':'Schuttgart Territory','Town of Goddard':'Goddard Territory',
+  'Talking Island Village':'Talking Island','Elven Village':'Elven Territory',
+  'Dark Elven Village':'Dark Elven Territory','Orc Village':'Orc Territory',
+  'Dwarven Village':'Dwarven Territory'
+};
+function territoryFor(region){return region ? (territoryMap[region] || region) : 'Unknown territory'}
+function fillRegions(){
+ const names=[...new Set(mobs.map(m=>territoryFor(m.region)))].sort((a,b)=>a.localeCompare(b));
+ const sel=$('region');sel.innerHTML='<option value="all">All territories</option>';
+ for(const name of names){let o=document.createElement('option');o.value=name;o.textContent=name;sel.appendChild(o)}
+}
+function fillZones(){
+ const selected=$('region').value;const zoneSel=$('zone');
+ const names=[...new Set(mobs.filter(m=>selected==='all'||territoryFor(m.region)===selected).map(m=>m.hunting_zone).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ zoneSel.innerHTML='<option value="all">All hunting zones</option>';
+ for(const name of names){let o=document.createElement('option');o.value=name;o.textContent=name;zoneSel.appendChild(o)}
+ const hasUnknown=mobs.some(m=>(selected==='all'||territoryFor(m.region)===selected)&&!m.hunting_zone);
+ $('regionhint').textContent=`${names.length} hunting zones in selection${hasUnknown?' · some monsters have region-only or unknown locations':''}. Territory labels are organized from Interlude region data.`;
+}
+(async()=>{try{const [ms,ls,ss]=await Promise.all([paged('navigator_monsters','level=gte.1&level=lte.100','level.asc,id.asc'),allLoot(),paged('raid_boss_spawns','id=gte.1','id.asc')]);mobs=ms;loot=ls;spawns=ss;for(let sp of spawns){if(!spawnMap.has(sp.monster_id))spawnMap.set(sp.monster_id,[]);spawnMap.get(sp.monster_id).push(sp)}for(let item of loot){if(!lootMap.has(item.monster_id))lootMap.set(item.monster_id,[]);lootMap.get(item.monster_id).push(item)}fillRegions();fillZones();loaded=true;$('status').textContent=`🟢 Connected to VoLuMaX Database · ${mobs.filter(x=>x.npc_type==='Monster').length} normal monsters + ${mobs.filter(x=>x.npc_type!=='Monster').length} bosses · ${loot.length} loot entries · ${[...new Set(mobs.map(m=>m.hunting_zone).filter(Boolean))].length} known zones`;render();}catch(err){$('status').classList.add('error');$('status').textContent='⚠️ Database connection: '+err.message;$('cards').innerHTML='<div class="mutedNotice">Could not fetch live data. Check internet access and public Data API settings.</div>'}})();
+</script></body></html>
