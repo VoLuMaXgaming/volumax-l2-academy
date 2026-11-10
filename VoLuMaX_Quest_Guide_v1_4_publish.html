@@ -32,6 +32,51 @@ a{color:#b5d9ff}.count{font-size:14px;color:var(--muted)}
 </style></head>
 <body><main>
 <nav class="academy-nav" aria-label="VoLuMaX Academy sections"><a href="./index.html">📚 L2 Wiki</a><a href="./VoLuMaX_Quest_Guide_v1_4_publish.html" aria-current="page">📜 Quest Guide</a></nav>
+
+<script>
+/* Discord Activities run behind a restricted proxy. Avoid iframe top-level
+   navigation when switching Academy pages; fetch the mapped HTML instead. */
+(function () {
+  const nav = document.querySelector('.academy-nav');
+  if (!nav || !location.hostname.endsWith('.discordsays.com')) return;
+
+  nav.addEventListener('click', async function (event) {
+    const link = event.target.closest('a[href]');
+    if (!link || !nav.contains(link)) return;
+    event.preventDefault();
+    const target = link.getAttribute('href');
+    if (link.getAttribute('aria-current') === 'page') return;
+    if (nav.dataset.loading === '1') return;
+    nav.dataset.loading = '1';
+    const original = link.textContent;
+    link.textContent = '⏳ Loading…';
+    try {
+      const response = await fetch(target, { credentials: 'same-origin', cache: 'no-cache' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const html = await response.text();
+      if (!html.includes('VoLuMaX') || !html.includes('academy-nav')) {
+        throw new Error('Invalid Academy page response');
+      }
+      // This replaces the iframe document without navigating to a blocked URL.
+      document.open();
+      document.write(html);
+      document.close();
+    } catch (err) {
+      link.textContent = original;
+      nav.dataset.loading = '0';
+      let notice = document.getElementById('academy-navigation-error');
+      if (!notice) {
+        notice = document.createElement('p');
+        notice.id = 'academy-navigation-error';
+        notice.style.cssText = 'padding:12px;border:1px solid #c18356;border-radius:10px;color:#ffcfaa';
+        nav.insertAdjacentElement('afterend', notice);
+      }
+      notice.textContent = 'Unable to open this Academy section: ' + err.message;
+    }
+  });
+})();
+</script>
+
 <header class="hero"><div class="eyebrow">🎓 VoLuMaX L2 ACADEMY · CLASSIC INTERLUDE</div><h1>📜 PROFESSION QUEST GUIDE <span style="font-size:13px">v1.4</span></h1>
 <p class="muted">Profession changes, NPCs, quest items, monsters, rewards and step-by-step walkthroughs — from the VoLuMaX Supabase database; verified class-change finishers are labeled separately.</p>
 <div class="meta"><span class="pill">1st / 2nd / 3rd class</span><span class="pill">Other quests</span><span class="pill">Quest steps</span></div>

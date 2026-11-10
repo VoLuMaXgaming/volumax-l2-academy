@@ -23,6 +23,51 @@
 .academy-nav a:focus-visible{outline:3px solid #f7d791;outline-offset:3px}
 </style></head><body><main>
 <nav class="academy-nav" aria-label="VoLuMaX Academy sections"><a href="./index.html" aria-current="page">📚 L2 Wiki</a><a href="./VoLuMaX_Quest_Guide_v1_4_publish.html">📜 Quest Guide</a></nav>
+
+<script>
+/* Discord Activities run behind a restricted proxy. Avoid iframe top-level
+   navigation when switching Academy pages; fetch the mapped HTML instead. */
+(function () {
+  const nav = document.querySelector('.academy-nav');
+  if (!nav || !location.hostname.endsWith('.discordsays.com')) return;
+
+  nav.addEventListener('click', async function (event) {
+    const link = event.target.closest('a[href]');
+    if (!link || !nav.contains(link)) return;
+    event.preventDefault();
+    const target = link.getAttribute('href');
+    if (link.getAttribute('aria-current') === 'page') return;
+    if (nav.dataset.loading === '1') return;
+    nav.dataset.loading = '1';
+    const original = link.textContent;
+    link.textContent = '⏳ Loading…';
+    try {
+      const response = await fetch(target, { credentials: 'same-origin', cache: 'no-cache' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const html = await response.text();
+      if (!html.includes('VoLuMaX') || !html.includes('academy-nav')) {
+        throw new Error('Invalid Academy page response');
+      }
+      // This replaces the iframe document without navigating to a blocked URL.
+      document.open();
+      document.write(html);
+      document.close();
+    } catch (err) {
+      link.textContent = original;
+      nav.dataset.loading = '0';
+      let notice = document.getElementById('academy-navigation-error');
+      if (!notice) {
+        notice = document.createElement('p');
+        notice.id = 'academy-navigation-error';
+        notice.style.cssText = 'padding:12px;border:1px solid #c18356;border-radius:10px;color:#ffcfaa';
+        nav.insertAdjacentElement('afterend', notice);
+      }
+      notice.textContent = 'Unable to open this Academy section: ' + err.message;
+    }
+  });
+})();
+</script>
+
 <header><small>⚔️ VoLuMaX L2 ACADEMY</small><h1>L2 WIKI · MONSTERS &amp; LOOT</h1><div class="sub">V1.7 LIVE · Classic Interlude · XP / SP / Adena ×3 · LVL 1–80 · Discord Activity foundation</div></header>
 <section class="panel"><div class="extra"><h2>Find your hunting route</h2><span class="rangeout" id="chapter">1–80 LVL</span></div><div class="grid"><div><label>Character level</label><input type="number" id="level" min="1" max="80" value="28"></div><div><label>Playstyle</label><select id="klass"><option value="dwarf">Dwarf – Spoiler / Crafter</option><option value="fighter">Damage Dealer – Fighter / Archer</option><option value="mage">Mage – Magic Damage</option><option value="support">Support – Healer / Buffer</option></select></div></div><div class="filter"><input type="range" id="slider" min="1" max="80" value="28"></div>
 <div class="filter"><label>Your goal</label><div class="toggle" id="goals"><button data-v="xp" class="selected">⚔️ XP</button><button data-v="adena">💰 Adena</button><button data-v="spoil">⛏️ Spoil</button></div></div>
