@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#091728"><title>VoLuMaX L2 Academy — Profession Quest Guide v1.4</title>
+<style>
+:root{color-scheme:dark;--bg:#091728;--panel:#112541;--inner:#081b30;--line:#36506d;--gold:#f0c476;--text:#ecf2fa;--muted:#a6bad0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1a3559,#091728 50%);font:16px system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}
+main{max-width:1080px;margin:auto;padding:18px 16px 80px}h1{font-size:clamp(30px,5vw,44px);margin:6px 0}h2{font-size:22px;margin:0 0 14px}
+p{line-height:1.5}.muted{color:var(--muted)}.eyebrow{color:var(--gold);font-size:12px;letter-spacing:2px;font-weight:800}
+.hero,.panel{background:linear-gradient(120deg,#122744,#0e223c);border:1px solid var(--line);border-radius:23px;padding:23px;margin-bottom:17px}
+.hero{border-color:#856e48}.gold{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+label{display:block;color:var(--muted);font-size:14px;margin:0 0 6px}select,input{background:#081a2d;color:var(--text);font:inherit;min-height:47px;padding:10px;border:1px solid #59728e;border-radius:12px;width:100%;outline:none}input:focus,select:focus{border-color:var(--gold)}
+.meta{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid #405978;border-radius:11px;padding:6px 10px;background:#203856;font-size:13px}
+button{font:inherit;cursor:pointer;background:#1c3956;color:var(--text);border:1px solid #60738f;border-radius:12px;padding:11px 14px}
+button.primary{background:var(--gold);color:#1e2532;border-color:var(--gold);font-weight:750}.cards{display:grid;gap:12px;margin-top:17px}
+.card{background:var(--inner);border:1px solid #3b5675;border-radius:17px;padding:16px}
+.card h3{margin:0;font-size:21px}.cardhead{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.card p{margin:9px 0}.details{margin-top:16px;display:none}.details.open{display:block}
+.steps{display:grid;gap:9px}.step{display:flex;gap:10px;align-items:flex-start;background:#102a44;border:1px solid #294967;padding:12px;border-radius:11px}
+.step input{width:20px;min-height:20px;accent-color:#f0c476;margin:3px 0}
+.step .small{font-size:13px;color:var(--muted)}.step.done{opacity:.65}
+.reward{margin:10px 0}.subbox{margin:10px 0;padding:13px;background:#102b45;border-radius:12px}
+a{color:#b5d9ff}.count{font-size:14px;color:var(--muted)}
+#status{border:1px solid #4d6682;background:#081d34;border-radius:12px;padding:12px;margin-top:14px}
+#loadmore{margin-top:16px}.hint{background:#342b22;border:1px solid #8e7048;padding:12px 14px;border-radius:12px;color:#e9d1aa}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.grid .wide{grid-column:span 2}.hero,.panel{padding:16px}.cardhead{flex-direction:column}}
+</style></head>
+<body><main>
+<header class="hero"><div class="eyebrow">🎓 VoLuMaX L2 ACADEMY · CLASSIC INTERLUDE</div><h1>📜 PROFESSION QUEST GUIDE <span style="font-size:13px">v1.4</span></h1>
+<p class="muted">Profession changes, NPCs, quest items, monsters, rewards and step-by-step walkthroughs — from the VoLuMaX Supabase database; verified class-change finishers are labeled separately.</p>
+<div class="meta"><span class="pill">1st / 2nd / 3rd class</span><span class="pill">Other quests</span><span class="pill">Quest steps</span></div>
+</header>
+<section class="panel">
+<h2>Choose your profession path</h2>
+<div class="grid">
+<div><label for="stage">What are you doing?</label><select id="stage"><option value="first_class_transfer">1st profession (19 → 20)</option><option value="second_class_transfer">2nd profession (35 / 37 / 39 → 40)</option><option value="third_class_transfer">3rd profession (76+)</option><option value="other">Other quests</option><option value="all">All quests (advanced)</option></select></div>
+<div><label for="race">Race</label><select id="race"><option value="Human">Human</option><option value="Elf">Elf</option><option value="Dark Elf">Dark Elf</option><option value="Orc">Orc</option><option value="Dwarf">Dwarf</option></select></div>
+<div><label for="current">I am currently...</label><select id="current"></select></div>
+<div><label for="target">I want to become...</label><select id="target"></select></div>
+<div><label for="level">Character LVL</label><input id="level" type="number" min="1" max="80" value="19"></div>
+<div><label for="levelmode">Level selection</label><select id="levelmode"><option value="all">Show my profession quests</option><option value="eligible">Only quests available now</option></select></div>
+<div class="wide"><label for="search">Search by quest name, NPC or location (optional)</label><input id="search" placeholder="e.g. Scavenger, Trial of the Guildsman, Toma..."></div>
+</div>
+<div id="pathinfo" class="subbox" aria-live="polite">Loading the classic profession tree...</div>
+<div id="status">Connecting to VoLuMaX Database…</div></section>
+<section class="panel"><div class="cardhead"><h2>Quest results</h2><span class="count" id="count"></span></div>
+<div class="hint">📚 Classic Interlude profession tree: 18 first professions, 31 second (three marks each), 31 third-class Sagas. Start and final class-change NPCs are shown separately. Journal stages may include alternative branches. Quest rewards, spawn points and server-specific changes should be checked in-game.</div>
+<div id="cards" class="cards"></div><button id="loadmore" style="display:none">Show more quests</button>
+</section></main>
+<script>
+const IS_DISCORD=location.hostname.endsWith('.discordsays.com');
+const URL=IS_DISCORD?'/supabase/rest/v1/':'https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let quests=[],classes=[],routes=[],requirements=[],completions=[],matches=[],shown=0;const PAGE=18;
+async function db(table,query){const r=await fetch(URL+table+'?'+query,{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw Error(table+' HTTP '+r.status);return await r.json()}
+function optText(q){return [q.start_npc,q.primary_location,q.primary_region].filter(Boolean).join(' • ')}
+function levelLabel(q){return q.min_level==null?'LVL not specified':'LVL '+q.min_level+'+'}
+function typeLabel(k){return ({first_class_transfer:'1st class',second_class_transfer:'2nd class',third_class_transfer:'3rd class',other:'Other quest'})[k]||k}
+function depth(c){let n=0,seen=new Set();while(c&&c.parent_class_id!=null&&!seen.has(c.id)){seen.add(c.id);c=classes.find(x=>x.id===c.parent_class_id);n++}return n}
+function appendOption(el,value,label){const o=document.createElement('option');o.value=String(value);o.textContent=label;el.appendChild(o)}
+function chosen(){return classes.find(c=>String(c.id)===$('current').value)}
+function targetClass(){return classes.find(c=>String(c.id)===$('target').value)}
+function updateClasses(){const stage=$('stage').value,race=$('race').value,needed=stage==='first_class_transfer'?0:stage==='second_class_transfer'?1:stage==='third_class_transfer'?2:null;
+const previous=$('current').value;$('current').innerHTML='';const available=classes.filter(c=>c.race===race&&(needed===null||depth(c)===needed));
+available.forEach(c=>appendOption($('current'),c.id,c.name));if(available.some(c=>String(c.id)===previous))$('current').value=previous;
+$('current').disabled=stage==='other'||stage==='all';$('target').disabled=stage==='other'||stage==='all';updateTargets()}
+function updateTargets(){const curr=chosen(),previous=$('target').value,stage=$('stage').value;$('target').innerHTML='';const next=classes.filter(c=>curr&&c.parent_class_id===curr.id);for(const c of next)appendOption($('target'),c.id,c.name);
+if(next.some(c=>String(c.id)===previous))$('target').value=previous;
+if(next.length===0)appendOption($('target'),'','No further class transfer');
+filter()}
+function relevant(q,stage,c,t){
+ if(stage==='all')return true;
+ if(q.category!==stage)return false;
+ if(stage==='other')return true;
+ if(!c||!t)return false;
+ return requirements.some(x=>x.quest_id===q.id&&x.target_class_id===t.id&&x.stage===({first_class_transfer:1,second_class_transfer:2,third_class_transfer:3}[stage]));
+}
+function questLevel(q,t){const r=requirements.find(x=>x.quest_id===q.id&&x.target_class_id===t?.id);return r?.quest_level??q.min_level}
+function orderFor(q,t){return requirements.find(x=>x.quest_id===q.id&&x.target_class_id===t?.id)?.sequence??999}
+function careerLine(c){const path=[];let x=c;const seen=new Set();while(x&&!seen.has(x.id)){seen.add(x.id);path.unshift(x);x=classes.find(y=>y.id===x.parent_class_id)}return path}
+function careerPreview(t){if(!t)return '';const ancestors=careerLine(t);const next=classes.filter(x=>x.parent_class_id===t.id);const after=next.length?next.map(x=>x.name).join(' / '):'Final profession';return '<div style="margin:10px 0;padding:12px;border-radius:12px;border:1px solid #516a87;background:#0c243d"><span class="gold">🌟 ZERO → HERO CLASS TREE</span><p>'+ancestors.map(x=>esc(x.name)).join(' → ')+(next.length?' → '+esc(after):'')+'</p></div>'}
+function filter(){const stage=$('stage').value,lv=Number($('level').value)||1,mode=$('levelmode').value,c=chosen(),t=targetClass(),search=$('search').value.trim().toLowerCase();
+ const humanStage=stage==='first_class_transfer'?'1st class transfer':stage==='second_class_transfer'?'2nd class transfer':stage==='third_class_transfer'?'3rd class transfer':'Quest browser';
+ let info=(stage==='other'||stage==='all')?'Browse all source quests by level and keyword. Profession selection is unused in this mode.':`<strong>⚔️ ${esc(c?.name||'Choose a class')} → <span class="gold">${esc(t?.name||'Choose a profession')}</span></strong><p>${humanStage}</p>`;
+ if(t&&stage==='first_class_transfer'){
+  const q=quests.find(x=>requirements.some(r=>r.target_class_id===t.id&&r.stage===1&&r.quest_id===x.id));const r=routes.find(x=>x.quest_id===q?.id);
+  info+=`<div class="subbox"><strong>🧭 LVL 19: Start the quest</strong><p>${esc(q?.name||'Quest not linked')} with <strong>${esc(r?.start_npc_name||q?.start_npc||'Unknown')}</strong> · ${esc(r?.start_location||q?.primary_location||'Location not supplied')}</p><strong>🏆 LVL 20: Receive your profession</strong><p>Obtain <strong>${esc(r?.proof_item_name||'quest proof item')}</strong> and speak to <strong>${esc(r?.final_class_npc_name||'matching guild master')}</strong> · ${esc(r?.final_class_location||'matching guild')}</p></div>`;
+ }
+ if(t&&stage==='second_class_transfer'){
+  const comp=completions.find(x=>x.target_class_id===t.id),seq=requirements.filter(x=>x.stage===2&&x.target_class_id===t.id).sort((a,b)=>a.sequence-b.sequence);
+  const finalNpc=esc(comp?.npc_name||'matching guild master'),finalPlace=esc(comp?.npc_location||'matching guild in a major town');
+  const changeDetails=`With all three marks, visit <strong>${finalNpc}</strong> · ${finalPlace}. Choose <em>Information on Change Occupation → ${esc(t.name)} → Change Occupation</em>.`;
+  info+=`<div class="subbox" style="border:1px solid #c59c56;background:#213047"><strong class="gold">🏆 YOUR FINAL CLASS TRANSFER · LVL 40</strong><p>${changeDetails}</p><p class="muted">${esc(comp?.verification_note||'Confirm class transfer dialogue with your server.')}</p></div>
+  <div class="subbox"><strong>🎖️ Collect all three profession marks</strong>${seq.map((r,i)=>{const q=quests.find(x=>x.id===r.quest_id);return `<p><strong>${i+1}. LVL ${r.quest_level} — ${esc(q?.name||'Unknown quest')}</strong><br>Start NPC: ${esc(q?.start_npc||'Not provided')} · ${esc(q?.primary_location||q?.primary_region||'Location not provided')}<br><small>Finish the quest and receive its mark</small></p>`}).join('')}<hr style="border:0;border-top:1px solid #42576e"><strong class="gold">🏆 LVL 40 — Class change (reminder)</strong><p>${changeDetails}</p></div>`;
+ }
+ if(t&&stage==='third_class_transfer'){
+  const comp=completions.find(x=>x.target_class_id===t.id);
+  info+=`<div class="subbox"><strong>📜 LVL 76: Your class Saga</strong><p>Complete the class-specific Saga, its six Tablets of Vision, and required items. Afterwards return to <strong>${esc(comp?.npc_name||'the Saga quest giver')}</strong> · ${esc(comp?.npc_location||'refer to journal for location')} to finish your class change.</p><p class="muted">${esc(comp?.verification_note||'Interlude reference; verify on your server.')}</p></div>`;
+ }
+ $('pathinfo').innerHTML=info+(stage==='other'||stage==='all'?'':careerPreview(t));
+ matches=quests.filter(q=>relevant(q,stage,c,t)&&(mode==='all'||questLevel(q,t)==null||questLevel(q,t)<=lv)&&(!search||[q.name,q.description,q.start_npc,q.primary_region,q.primary_location,(q.class_restrictions||[]).map(c=>c.name).join(' ')].join(' ').toLowerCase().includes(search))).sort((a,b)=>orderFor(a,t)-orderFor(b,t)||a.id-b.id);
+ shown=0;$('cards').innerHTML='';more();$('count').textContent=matches.length+' relevant quest'+(matches.length===1?'':'s');
+}
+function more(){const sub=matches.slice(shown,shown+PAGE);shown+=sub.length;
+for(const q of sub){
+ const e=document.createElement('article');e.className='card';e.innerHTML=`<div class="cardhead"><h3>${esc(q.name)}</h3><span class="pill">${esc(questLevel(q,targetClass())==null?"LVL not specified":"LVL "+questLevel(q,targetClass())+"+")}</span></div>
+ <div class="meta" style="margin:10px 0"><span class="pill">${esc(typeLabel(q.category))}</span>${q.repeatable&&q.category==='other'?'<span class="pill">Repeatable (source)</span>':''}${(q.class_restrictions||[]).map(c=>'<span class="pill">'+esc(c.name)+'</span>').join('')}</div>
+ <p class="muted">${esc(optText(q)||'Start NPC / location not confirmed')}</p>
+ <p class="count">${q.step_count} journal steps · ${q.monster_count} related monsters · ${q.quest_item_count} quest items</p>
+ <button class="primary" data-open="${q.id}">View quest walkthrough</button><div class="details" id="detail-${q.id}"></div>`;
+ $('cards').appendChild(e);
+}
+$('loadmore').style.display=shown<matches.length?'inline-block':'none';
+document.querySelectorAll('button[data-open]').forEach(b=>b.onclick=()=>openQuest(Number(b.dataset.open),b));
+}
+function money(v){return v==null?'Not specified':Number(v).toLocaleString('en-US')}
+async function openQuest(id,b){const target=$('detail-'+id);if(target.classList.contains('open')){target.classList.remove('open');b.textContent='View quest walkthrough';return}
+if(!target.dataset.loaded){b.disabled=true;b.textContent='Loading...';try{
+const [steps,npcs,mobs,items,rewards]=await Promise.all([
+db('quest_steps','select=step_index,title,description,completion_npc_name&quest_id=eq.'+id+'&order=step_index.asc'),
+db('quest_involved_npcs','select=npc_id,npc_name&quest_id=eq.'+id),
+db('quest_involved_monsters','select=monster_id,monster_name&quest_id=eq.'+id),
+db('quest_required_items','select=item_id,item_name,icon_file&quest_id=eq.'+id),
+db('quest_reward_items','select=item_id,item_name,amount&quest_id=eq.'+id)]);
+const q=quests.find(x=>x.id===id);
+const route=routes.find(x=>x.quest_id===id);
+const group=(arr,key)=>arr.length?arr.map(x=>esc(x[key])+(x.amount?' ×'+money(x.amount):'')).join(' · '):'None listed in source';
+const key=id+'-';
+const professionPanel = q.category==='other' ? '' : (q.category==='first_class_transfer' && route?.final_class_npc_name ?
+ `<div class="subbox" style="border:1px solid #c59c56;background:#213047"><strong class="gold">⚔️ COMPLETE FIRST CLASS TRANSFER</strong>
+ <p>🟢 <strong>START QUEST · LVL 19:</strong> ${esc(route.start_npc_name||q.start_npc)} · ${esc(route.start_location||q.primary_location)}</p>
+ <p>📜 <strong>QUEST:</strong> Complete the journal stages below. Some may be alternative branches, not mandatory in a single order.</p>
+ <p>🎖️ <strong>PROOF ITEM:</strong> ${esc(route.proof_item_name||'Obtain proof item from the final quest NPC')}</p>
+ <p>🏆 <strong>CHANGE CLASS AT LVL 20:</strong> ${esc(route.final_class_npc_name)} · ${esc(route.final_class_location||'Matching guild')}. Bring the proof item.</p>
+ <p class="muted">${esc(route.quest_route_notes||'')}</p>
+ ${route.source_url?`<a href="${esc(route.source_url)}" target="_blank" rel="noopener">Reference guide</a>`:''}</div>` :
+ q.category==='third_class_transfer' && route?.final_class_npc_name ?
+ `<div class="subbox" style="border:1px solid #c59c56;background:#213047"><strong class="gold">⚔️ THIRD CLASS SAGA — LVL 76</strong><p>🟢 <strong>START:</strong> ${esc(route.start_npc_name||'See journal')} · ${esc(route.start_location||'See journal')}</p><p>📜 Complete the Saga and commune with all six Tablets of Vision.</p><p>🏆 <strong>FINISH YOUR PROFESSION:</strong> Return to <strong>${esc(route.final_class_npc_name)}</strong> · ${esc(route.final_class_location||'See quest journal')}, at LVL 76+.</p><p class="muted">Class-transfer NPC grounded in the last Interlude journal step; server variations possible.</p></div>` :
+ q.category==='second_class_transfer' ?
+ `<div class="subbox" style="border:1px solid #c59c56"><strong>🎖️ ONE OF THE THREE CLASS MARKS</strong><p>Start with <strong>${esc(q.start_npc||'quest NPC')}</strong> · ${esc(q.primary_location||q.primary_region||'check quest journal')}. Follow the journal and obtain the mark. After collecting all three required marks, use the guild master's change-occupation dialogue at LVL 40 (see class route above).</p></div>` :
+ `<div class="subbox"><strong>⚠️ FINISH NPC NOT CONFIRMED</strong><p>Use the Quest Journal to confirm the ending. Do not treat the last journal entry alone as the final class-change NPC.</p></div>`);
+target.innerHTML=`${professionPanel}<div class="subbox"><strong>Quest rewards (source; verify quantities/rates)</strong><div class="reward">XP: ${money(q.reward_xp)} · SP: ${money(q.reward_sp)} · Adena: ${money(q.reward_adena)}</div><div>${group(rewards,'item_name')}</div></div>
+<div class="subbox"><strong>Related NPCs</strong><p>${group(npcs,'npc_name')}</p><strong>Related monsters</strong><p>${group(mobs,'monster_name')}</p><strong>Quest items</strong><p>${group(items,'item_name')}</p></div>
+<h3>📜 Quest journal walkthrough (${steps.length} steps)</h3>
+<div class="steps">${steps.map(x=>`<label class="step"><input type="checkbox" class="tick"><span><strong>${x.step_index}. ${esc(x.title||'Quest step')}</strong><div class="small">${esc(x.description||'No journal instructions supplied').replace(/\\n/g,'<br>')}</div>${x.completion_npc_name?`<div class="small">Complete with: ${esc(x.completion_npc_name)}</div>`:''}</span></label>`).join('')}</div><p class="muted" style="font-size:12px">✔ Checks are session-only and reset when the page reloads; no player progress is stored.</p>`;
+target.querySelectorAll('.tick').forEach(c=>c.onchange=()=>c.closest('.step').classList.toggle('done',c.checked));
+target.dataset.loaded='true';
+}catch(e){target.innerHTML='<p class="muted">Could not load quest details: '+esc(e.message)+'</p>'}finally{b.disabled=false;b.textContent='Hide walkthrough'}}
+target.classList.add('open');b.textContent='Hide walkthrough'}
+$('loadmore').onclick=more;
+$('stage').addEventListener('change',()=>{const suggested={'first_class_transfer':19,'second_class_transfer':35,'third_class_transfer':76};if(suggested[$('stage').value])$('level').value=suggested[$('stage').value];updateClasses()});
+$('race').addEventListener('change',()=>{ $('current').value='';updateClasses() });
+$('current').addEventListener('change',updateTargets);
+$('target').addEventListener('change',filter);
+['level','levelmode','search'].forEach(k=>$(k).addEventListener(k==='level'||k==='search'?'input':'change',filter));
+(async()=>{try{
+[quests,classes,routes,requirements,completions]=await Promise.all([
+ db('quest_guide_catalog','select=*&order=id.asc&limit=1000'),
+ db('classes','select=id,name,race,parent_class_id&order=id.asc&limit=200'),
+ db('quest_class_transfer_routes','select=*&limit=250'),
+ db('class_transfer_quest_requirements','select=*&limit=250'),
+ db('class_transfer_completions','select=*&limit=200')]);
+$('status').textContent='🟢 Connected · '+quests.length+' Interlude quests · '+classes.length+' classes · '+requirements.length+' profession quest links';updateClasses();
+}catch(e){$('status').textContent='⚠ Database connection failed: '+e.message}})();
+</script></body></html>
