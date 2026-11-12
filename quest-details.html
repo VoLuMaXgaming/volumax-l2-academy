@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VoLuMaX · Quest Details</title><style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#eaf4ff;background:#071422;--gold:#ecc77f}*{box-sizing:border-box}body{margin:0;line-height:1.5;background:radial-gradient(ellipse at top,#1a3a55,#071422 65%)}main{max-width:900px;margin:auto;padding:14px 12px 80px}h1{font-size:clamp(26px,6vw,40px);line-height:1.12}h2{font-size:20px}.panel{background:#112741;border:1px solid #42607b;border-radius:18px;padding:17px;margin:12px 0}.muted,small{color:#bacbdf}.gold{color:#ecc77f}a{color:#f4cf8b;text-decoration:none}a:hover{text-decoration:underline}nav{display:flex;gap:8px;flex-wrap:wrap}nav a,.button{display:inline-block;padding:9px 12px;border:1px solid #6785a0;border-radius:10px;background:#1c3a56;color:white}.chip{display:inline-block;font-size:12px;border:1px solid #47627d;background:#1b3b56;padding:4px 8px;border-radius:8px;margin:3px}.quest{display:block;padding:13px;border-radius:12px;border:1px solid #466580;background:#1a3650;margin:9px 0}.quest strong{color:#efcd88}.notice{background:#0b1d31;border:1px solid #3e617e;border-radius:12px;padding:12px;margin:10px 0}.step{padding:12px 0;border-bottom:1px solid #34546e}.row{display:flex;gap:7px;flex-wrap:wrap}.tiny{font-size:12px}@media(max-width:500px){.panel{padding:13px}}
+</style></head><body><main><nav><a href="./quest-guide.html">📜 All Quests</a><a href="./maps-v2-5.html?mode=quest">🗺️ Quest NPC Map</a><a href="./index.html">📚 Wiki</a></nav>
+<section class="panel"><div class="gold">⚔️ VOLUMAX L2 ACADEMY · QUEST DETAILS</div><h1 id="title">📜 Loading quest…</h1><div id="overview" class="muted">Loading Classic Interlude source data.</div></section>
+<section class="panel"><h2>🧙 Related NPCs</h2><div id="npcs">Loading…</div><h2>⚔️ Related quest monsters</h2><div id="mobs">Loading…</div><h2>🎒 Required items</h2><div id="items">Loading…</div></section>
+<section class="panel"><h2>📜 Quest journal steps</h2><div id="steps">Loading…</div><p class="muted tiny">Journal entries may include alternative branches. Confirm requirements in your game server. Checks here are not saved.</p></section>
+</main><script>const ROOT='https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const API=location.hostname.endsWith('.discordsays.com')?'/supabase/rest/v1/':ROOT;
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=x=>Number(x||0).toLocaleString('en-US');
+async function query(table,fields,extra=''){const url=API+table+'?select='+encodeURIComponent(fields)+(extra?'&'+extra:'');const r=await fetch(url,{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw new Error(table+' HTTP '+r.status);return r.json();}
+const types={first_class_transfer:'1st profession',second_class_transfer:'2nd profession',third_class_transfer:'3rd profession',other:'Normal quest'};
+const typeName=x=>types[x]||String(x||'Quest');
+
+const args=new URLSearchParams(location.search),questId=Number(args.get('quest_id')||0),refNpc=Number(args.get('npc_id')||0);
+(async()=>{if(!Number.isInteger(questId)||questId<=0){$('title').textContent='Invalid Quest ID';return}
+try{
+const [quests,npcs,mobs,steps,items]=await Promise.all([
+query('quest_guide_catalog','id,name,category,transfer_stage,min_level,max_level,start_npc,start_npc_id,primary_region,primary_location,description,reward_xp,reward_sp,reward_adena','id=eq.'+questId+'&limit=1'),
+query('quest_involved_npcs','npc_id,npc_name','quest_id=eq.'+questId+'&limit=300'),
+query('quest_involved_monsters','monster_id,monster_name','quest_id=eq.'+questId+'&limit=300'),
+query('quest_steps','step_index,title,description,completion_npc_name','quest_id=eq.'+questId+'&order=step_index.asc&limit=300'),
+query('quest_required_items','item_id,item_name','quest_id=eq.'+questId+'&limit=300')]);
+if(!quests.length){$('title').textContent='Quest not found';$('overview').textContent='Quest #'+questId+' is not in our current reference catalog.';return}
+const q=quests[0];$('title').textContent='📜 '+q.name;
+$('overview').innerHTML='<div class="row"><span class="chip">'+esc(typeName(q.category))+'</span><span class="chip">LVL '+esc(q.min_level??'?')+'+</span><span class="chip">Quest #'+q.id+'</span></div><p>'+esc(q.description||'No summary supplied')+'</p><p>🟢 Start: <b>'+esc(q.start_npc||'Not recorded')+'</b> · '+esc(q.primary_location||q.primary_region||'Location not recorded')+'</p><p>🎁 Reference rewards: XP '+fmt(q.reward_xp)+' · SP '+fmt(q.reward_sp)+' · Adena '+fmt(q.reward_adena)+'</p>'+(refNpc?'<p><a href="./npc-details.html?npc_id='+refNpc+'">↩ Back to the NPC’s other quests</a></p>':'');
+$('npcs').innerHTML=npcs.length?npcs.map(n=>'<a class="chip" href="./npc-details.html?npc_id='+n.npc_id+'">🧙 '+esc(n.npc_name||'NPC #'+n.npc_id)+'</a>').join(' '):'<p class="muted">No related NPC entries.</p>';
+$('mobs').innerHTML=mobs.length?mobs.map(m=>'<a class="chip" href="./index.html?monster_id='+m.monster_id+'">⚔️ '+esc(m.monster_name||'Monster #'+m.monster_id)+'</a>').join(' '):'<p class="muted">No quest mob entries.</p>';
+$('items').innerHTML=items.length?items.map(i=>'<span class="chip">🎒 '+esc(i.item_name)+'</span>').join(' '):'<p class="muted">No required items in our source.</p>';
+$('steps').innerHTML=steps.length?steps.map(s=>'<div class="step"><strong class="gold">'+esc(s.step_index)+'. '+esc(s.title||'Quest step')+'</strong><p>'+esc(s.description||'No details supplied').replace(/\n/g,'<br>')+'</p>'+(s.completion_npc_name?'<small>Finish with: '+esc(s.completion_npc_name)+'</small>':'')+'</div>').join(''):'<p class="muted">No walkthrough stages provided for this quest.</p>';
+}catch(err){$('overview').textContent='Quest data could not be loaded: '+err.message;$('steps').textContent='Please check connection and database permissions.'}
+})();
+</script></body></html>

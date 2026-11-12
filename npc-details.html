@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VoLuMaX · NPC & Quests</title><style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#eaf4ff;background:#071422;--gold:#ecc77f}*{box-sizing:border-box}body{margin:0;line-height:1.5;background:radial-gradient(ellipse at top,#1a3a55,#071422 65%)}main{max-width:900px;margin:auto;padding:14px 12px 80px}h1{font-size:clamp(26px,6vw,40px);line-height:1.12}h2{font-size:20px}.panel{background:#112741;border:1px solid #42607b;border-radius:18px;padding:17px;margin:12px 0}.muted,small{color:#bacbdf}.gold{color:#ecc77f}a{color:#f4cf8b;text-decoration:none}a:hover{text-decoration:underline}nav{display:flex;gap:8px;flex-wrap:wrap}nav a,.button{display:inline-block;padding:9px 12px;border:1px solid #6785a0;border-radius:10px;background:#1c3a56;color:white}.chip{display:inline-block;font-size:12px;border:1px solid #47627d;background:#1b3b56;padding:4px 8px;border-radius:8px;margin:3px}.quest{display:block;padding:13px;border-radius:12px;border:1px solid #466580;background:#1a3650;margin:9px 0}.quest strong{color:#efcd88}.notice{background:#0b1d31;border:1px solid #3e617e;border-radius:12px;padding:12px;margin:10px 0}.step{padding:12px 0;border-bottom:1px solid #34546e}.row{display:flex;gap:7px;flex-wrap:wrap}.tiny{font-size:12px}@media(max-width:500px){.panel{padding:13px}}
+</style></head><body><main>
+<nav><a href="./maps-v2-5.html?mode=npc">🗺️ World Map</a><a href="./quest-guide.html">📜 Quest Guide</a><a href="./index.html">📚 Wiki</a></nav>
+<section class="panel"><div class="gold">⚔️ VOLUMAX L2 ACADEMY · NPC DIRECTORY</div><h1 id="title">🧙 Loading NPC…</h1><div id="summary" class="muted">Checking our Interlude database.</div><div id="back"></div></section>
+<section class="panel"><h2>📜 Quests involving this NPC</h2><div id="quests" class="notice">Loading related quests…</div><p class="muted tiny">Involved in a quest does not necessarily mean this NPC starts it. Some professions use multiple linked quests; Elysion may differ from Classic Interlude.</p></section>
+</main><script>const ROOT='https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const API=location.hostname.endsWith('.discordsays.com')?'/supabase/rest/v1/':ROOT;
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=x=>Number(x||0).toLocaleString('en-US');
+async function query(table,fields,extra=''){const url=API+table+'?select='+encodeURIComponent(fields)+(extra?'&'+extra:'');const r=await fetch(url,{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw new Error(table+' HTTP '+r.status);return r.json();}
+const types={first_class_transfer:'1st profession',second_class_transfer:'2nd profession',third_class_transfer:'3rd profession',other:'Normal quest'};
+const typeName=x=>types[x]||String(x||'Quest');
+
+const npcId=Number(new URLSearchParams(location.search).get('npc_id')||0);
+(async()=>{if(!Number.isInteger(npcId)||npcId<=0){$('title').textContent='Invalid NPC ID';$('quests').textContent='Open an NPC from the world map.';return}
+try{
+const [npcs,links]=await Promise.all([
+ query('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_id=eq.'+npcId+'&limit=15'),
+ query('quest_involved_npcs','quest_id,npc_id,npc_name','npc_id=eq.'+npcId+'&limit=700')]);
+const npc=npcs[0];$('title').textContent='🧙 '+(npc?.name||links[0]?.npc_name||'NPC #'+npcId);
+$('summary').innerHTML='<span class="chip">NPC ID '+npcId+'</span>'+(npc?'<span class="chip">'+esc(npc.npc_type)+'</span><p>📍 '+esc(npc.zone_label||'Zone not supplied')+' · X '+fmt(npc.x)+' / Y '+fmt(npc.y)+'</p>':'<p>Exact map location unavailable in reference data.</p>');
+$('back').innerHTML='<a class="button" href="./maps-v2-5.html?mode=npc&npc_id='+npcId+'">📍 Show this NPC on Map</a>';
+const ids=[...new Set(links.map(a=>Number(a.quest_id)).filter(x=>x>0))];
+if(!ids.length){$('quests').textContent='No NPC–quest links found in our database for this NPC. It may still be a shopkeeper, gatekeeper, or another NPC.';return}
+let quests=[];for(let i=0;i<ids.length;i+=60){quests.push(...await query('quest_guide_catalog','id,name,category,transfer_stage,min_level,max_level,start_npc,start_npc_id,primary_region','id=in.('+ids.slice(i,i+60).join(',')+')&limit=100'))}
+quests.sort((a,b)=>(a.min_level||0)-(b.min_level||0)||a.name.localeCompare(b.name));
+$('quests').innerHTML='<p>🔎 <strong>'+quests.length+'</strong> linked quest(s)</p>'+quests.map(q=>{const starter=q.start_npc_id===npcId||String(q.start_npc||'').toLowerCase()===String(npc?.name||links[0]?.npc_name||'').toLowerCase();return '<a class="quest" href="./quest-details.html?quest_id='+q.id+'&npc_id='+npcId+'"><strong>'+esc(q.name)+'</strong><div class="row"><span class="chip">'+esc(typeName(q.category))+'</span><span class="chip">LVL '+esc(q.min_level??'?')+'+</span>'+(starter?'<span class="chip">Quest starter</span>':'<span class="chip">Related NPC</span>')+'</div><small>'+esc(q.primary_region||'Region unknown')+' · Quest #'+q.id+'</small></a>'}).join('');
+}catch(err){$('quests').textContent='Could not load NPC quests: '+err.message;}
+})();
+</script></body></html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071424">
+<title>VoLuMaX · Interlude World Map v2.3</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#ecf5ff;background:#061324;--gold:#eec87c;--line:#385978;--muted:#b3c8dd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#19364f,#061324 66%)}main{max-width:1100px;padding:12px 12px 45px;margin:auto}
+.hero,.panel{background:#10243d;border:1px solid var(--line);border-radius:19px;padding:16px;margin-bottom:13px}.hero{border-color:#94754c;background:linear-gradient(135deg,#162f4c,#0c2138)}h1{font-size:clamp(30px,7vw,47px);line-height:1.14;margin:9px 0}h2{font-size:20px;margin:4px 0 12px}.muted{color:var(--muted)}.eyebrow{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:2px}
+nav,.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap}nav a,.tabs button,.actions button{border:1px solid #597895;border-radius:11px;background:#23415d;color:white;padding:10px 13px;font:inherit;text-decoration:none;cursor:pointer}nav{margin-bottom:12px}.tabs{margin:14px 0}.tabs button.active{background:var(--gold);color:#18283b;border-color:var(--gold);font-weight:800}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end}.filters label{font-size:12px;color:var(--muted)}input{width:100%;background:#071b30;color:#fff;border:1px solid #557592;border-radius:11px;padding:12px;font:inherit;margin-top:5px}.actions{margin:12px 0}.actions button{font-size:14px}.status{border:1px solid #547690;background:#091c30;color:#c8e1f4;border-radius:11px;padding:12px;margin-top:12px}.warning{border-left:4px solid #e6bd78;background:#342d29;color:#f1d8b4;border-radius:8px;padding:10px 12px;margin-top:11px;font-size:13px}
+#world{position:relative;height:min(75vh,740px);min-height:420px;background:#08192b;border:1px solid #476783;border-radius:15px;overflow:hidden;touch-action:none;cursor:grab;user-select:none}#world:active{cursor:grabbing}
+#stage{position:absolute;left:0;top:0;width:100%;transform-origin:0 0;will-change:transform}#stage img{width:100%;height:auto;display:block;pointer-events:none;-webkit-user-drag:none}#layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible}#pins circle{stroke:#071b2a;stroke-width:2.5;vector-effect:non-scaling-stroke;cursor:pointer}#pins circle.selected{stroke:#fff;stroke-width:3}#pins circle:hover{stroke:#fff6cc}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#bad0e5;margin:12px 0}.legend b{font-size:17px}#viewportNote{font-size:12px;color:#bdd2e7;margin-top:9px}
+.columns{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}.result{display:block;width:100%;padding:11px 12px;background:#17324c;border:1px solid #416482;border-radius:10px;color:#fff;text-align:left;margin:7px 0;cursor:pointer}.result.active{border-color:#f1ce8a;background:#2a4760}.result b,.result small{display:block}.result small{color:#bad0de;margin-top:2px}.detail{border:1px solid #766448;border-radius:12px;background:#152e46;padding:14px;min-height:130px}.detail a{display:inline-block;color:#f5c97d;margin-top:12px}.chip{display:inline-block;background:#234964;padding:5px 9px;border-radius:9px;margin:3px 4px 3px 0;font-size:12px}
+footer{font-size:12px;color:#93acc5;text-align:center;padding-top:10px}@media(max-width:720px){.filters{grid-template-columns:2fr 1fr 1fr}.columns{grid-template-columns:1fr}.panel,.hero{padding:13px}}@media(max-width:430px){.filters{grid-template-columns:1fr 1fr}.filters>div:first-child{grid-column:span 2}}
+#mapQuick{position:absolute;left:10px;right:10px;bottom:10px;z-index:5;background:#07192eea;border:1px solid #d9b875;border-radius:12px;padding:10px 12px;color:#fff;display:none;box-shadow:0 3px 15px #0008;max-width:470px}
+#mapQuick b{display:block;color:#f1cf8c;font-size:14px}#mapQuick span{font-size:12px;color:#bcd0e5}#mapQuick button{font:inherit;font-size:12px;background:#294766;border:1px solid #8caac4;border-radius:8px;padding:5px 7px;color:white;cursor:pointer}
+#mapQuick{max-height:min(52vh,390px);overflow-y:auto;overscroll-behavior:contain;max-width:460px}
+.quickhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.quicktitle{min-width:0}.quicktitle b{font-size:16px;line-height:1.3}
+.quickstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:10px 0}
+.quickstat{background:#15304a;border:1px solid #335777;border-radius:8px;padding:7px;font-size:12px;min-width:0;overflow-wrap:anywhere}
+.quickstat strong{display:block;color:#ffda94;font-size:14px;margin-top:3px}
+.quickmeta{font-size:12px;line-height:1.4;color:#c6daed}
+.quickactions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.quickactions a,.quickactions button{border:1px solid #d9b875;border-radius:8px;color:#102238;background:#eec87c;padding:8px 10px;text-decoration:none;font-weight:800;font-size:12px}
+
+#mapQuickClose{flex-shrink:0}
+
+/* v2.3 — compact map card: no DROP/SPOIL preview, no stat tiles */
+#mapQuick{padding:10px 12px;max-height:none;overflow:visible;max-width:390px;background:#07192ef5}
+#mapQuick .quicktitle b{font-size:15px}
+#mapQuick .quicktitle span{display:block;font-size:11px;line-height:1.3;margin-top:3px}
+.quicklines{display:grid;gap:3px;margin:9px 0 5px}
+.quickline{display:grid;grid-template-columns:20px 77px minmax(0,1fr);align-items:center;gap:6px;font-size:12px;line-height:1.4}
+.quickicon{font-size:13px}.quicklabel{color:#b7cee4}.quickline strong{color:#efcc89;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+#mapQuick .quickactions{margin-top:9px}
+#mapQuick .quickactions a,#mapQuick .quickactions button{font-size:11px;padding:7px 9px}
+@media(max-width:430px){#mapQuick{left:7px;right:7px;bottom:7px;padding:9px 10px}}
+</style></head><body><main>
+<nav><a href="./index.html">📚 Wiki</a><a href="./quest-guide.html">📜 Quests</a><a href="./leveling-navigator.html">🗺️ Leveling</a><a href="./raid-boss-atlas.html">🐉 Boss Atlas</a><a href="./maps.html">↩ Old Maps</a></nav>
+<header class="hero"><div class="eyebrow">⚔️ VOLUMAX L2 ACADEMY · CLASSIC INTERLUDE</div><h1>🌍 WORLD MAP v2.5</h1><p class="muted">Calibrated real terrain · NPCs · Raid Bosses · Quests · Monsters · Dungeon NPCs</p><p>Three reference cities: <b>Giran, Gludio, Talking Island</b>. The image and markers zoom and pan together.</p></header>
+<section class="panel"><h2>🎯 Find locations</h2>
+<div class="tabs" id="tabs"><button class="active" data-mode="raid">🐉 Raid Boss</button><button data-mode="npc">🧙 NPC</button><button data-mode="quest">📜 Quest NPC</button><button data-mode="monster">⚔️ Monster</button><button data-mode="questmob">🎯 Quest Mob</button><button data-mode="dungeon">🚪 Dungeon NPC</button></div>
+<div class="filters"><div><label>Search name<input id="query" type="search" placeholder="Name or part of name"></label></div><div><label>Min LVL<input id="lo" type="number" min="1" max="99" value="1"></label></div><div><label>Max LVL<input id="hi" type="number" min="1" max="99" value="85"></label></div></div>
+<div class="actions"><button id="searchBtn">🔎 Search map</button><button id="resetBtn">♻️ Reset view</button><button id="zoomIn">＋ Zoom in</button><button id="zoomOut">－ Zoom out</button></div>
+<div class="status" id="status" role="status">⏳ Connecting to VoLuMaX Database…</div>
+<div class="warning">⚠️ Fan-made Classic Interlude reference map, not confirmed Elysion Mobile coordinates. The 3-city alignment is approximate; town icons are not exact NPC spots. Dungeon interiors and floors are not included in this world map.</div></section>
+<section class="panel"><h2>🗺️ Aden & Elmore</h2><div class="legend"><span>🟠 Raid Boss</span><span>🟢 NPC</span><span>🟣 Quest NPC</span><span>🟡 Monster</span><span>🔴 Quest Mob</span><span>🔵 Dungeon</span></div>
+<div id="world"><div id="stage"><img id="terrain" src="./interlude-world-map.png" alt="Lineage II Interlude world terrain"><svg id="layer" viewBox="0 0 1812 2620" preserveAspectRatio="none"><g id="pins"></g></svg></div><div id="mapQuick" role="region" aria-label="Selected monster quick information">
+<div class="quickhead"><div class="quicktitle"><b id="mapQuickName"></b><span id="mapQuickMeta"></span></div><button id="mapQuickClose" type="button" aria-label="Close card">✕</button></div>
+<div id="mapQuickStats"></div>
+<div class="quickactions"><a id="mapQuickFull" href="./index.html">📖 View Full Details ↗</a><button id="mapQuickDetails" type="button">📍 Coordinates ↓</button></div>
+</div></div>
+<p id="viewportNote">Drag to pan • Pinch with two fingers to zoom • Tap a marker • Use search for monsters</p>
+<div class="status" id="imageState">⏳ Checking terrain PNG…</div></section>
+<div class="columns"><section class="panel"><h2>📍 Locations <span id="counter"></span></h2><p class="muted">Tap a result to center its marker. Up to 120 results listed; narrow your search for more.</p><div id="results"></div></section>
+<section class="panel"><h2>🔎 Selected location</h2><div id="detail" class="detail">Select a marker or a result.</div></section></div>
+<footer>VoLuMaX Gaming · Classic Interlude reference data · The terrain illustration may be subject to third-party rights; obtain permission before public redistribution.</footer>
+</main><script>
+'use strict';
+const ROOT='https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const API=location.hostname.endsWith('.discordsays.com')?'/supabase/rest/v1/':ROOT;
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=x=>document.getElementById(x),W=1812,H=2620;
+const BOUNDS={"minx": -129999.855, "maxx": 234482.75, "miny": -265176.086, "maxy": 264583.735};
+const COLORS={raid:'#f7a36a',npc:'#6ee2c4',quest:'#e1b3f2',monster:'#f2d26b',questmob:'#fb688b',dungeon:'#81a7ff'};
+let mode='raid',items=[],selected=null,request=0,cache=new Map(),questNPCs=null,questMobs=null,lootCache=new Map(),lootToken=0;
+let scale=1,tx=0,ty=0,baseWidth=0,baseHeight=0,terrainOK=false;
+const clean=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Math.round(Number(n)||0).toLocaleString('en-US');
+function pixel(x,y){return {x:(x-BOUNDS.minx)/(BOUNDS.maxx-BOUNDS.minx)*W,y:(y-BOUNDS.miny)/(BOUNDS.maxy-BOUNDS.miny)*H}}
+function status(s){$('status').textContent=s}
+function url(table,select,extra=''){return API+table+'?select='+encodeURIComponent(select)+(extra?'&'+extra:'')}
+async function page(table,select,extra='',limit=700,max=10000){let a=[];for(let off=0;off<max;off+=limit){let r=await fetch(url(table,select,extra)+'&limit='+limit+'&offset='+off,{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw Error(table+': HTTP '+r.status);let part=await r.json();if(!Array.isArray(part))throw Error('Invalid API response');a.push(...part);if(part.length<limit)break}return a}
+function normalize(r,k){let x=Number(r.x),y=Number(r.y);return {id:Number(r.npc_id??r.monster_id??r.id),name:String(r.name??'Unknown'),x,y,z:Number(r.z??0),level:Number(r.level??0),type:r.npc_type||k,zone:r.hunting_zone||r.region||r.zone_label||'',kind:k,respawn:Number(r.respawn_delay_seconds||0),respawnRandom:Number(r.respawn_random_seconds||0),hp:r.hp==null?null:Number(r.hp),mp:r.mp==null?null:Number(r.mp),xp:r.server_xp==null?null:Number(r.server_xp),sp:r.server_sp==null?null:Number(r.server_sp),aggressive:r.aggressive??null,grade:r.grade||null}}
+async function getData(){const q=$('query').value.trim(),low=Number($('lo').value)||1,high=Number($('hi').value)||85;
+ if(mode==='raid'){
+  if(!cache.has('raid')){const [sp,ms]=await Promise.all([page('raid_boss_spawns','monster_id,x,y,z,region,hunting_zone,respawn_delay_seconds,respawn_random_seconds','order=id.asc'),page('navigator_monsters','id,name,level,npc_type,hp,mp,server_xp,server_sp,aggressive','npc_type=in.(RaidBoss,GrandBoss)&order=id.asc')]);const ref=new Map(ms.map(x=>[Number(x.id),x]));cache.set('raid',sp.map(r=>normalize({...r,name:ref.get(Number(r.monster_id))?.name||'Raid Boss #'+r.monster_id,...(ref.get(Number(r.monster_id))||{}) ,monster_id:r.monster_id},'raid')))}
+  return cache.get('raid').filter(x=>x.level>=low&&x.level<=high&&(!q||x.name.toLowerCase().includes(q.toLowerCase())))}
+ if(['npc','quest','dungeon'].includes(mode)){
+  if(!cache.has('npcs')){let rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=neq.Monster&order=npc_id.asc');cache.set('npcs',rows.map(r=>normalize(r,'npc')))}
+  let rows=cache.get('npcs');if(mode==='quest'){if(!questNPCs){questNPCs=new Set((await page('quest_involved_npcs','npc_id')).map(x=>Number(x.npc_id)))}rows=rows.filter(x=>questNPCs.has(x.id)).map(x=>({...x,kind:'quest'}))}
+  else if(mode==='dungeon')rows=rows.filter(x=>/DungeonGatekeeper|SepulcherNpc|Teleporter|SignsPriest/i.test(x.type+' '+x.name)).map(x=>({...x,kind:'dungeon'}));
+  return rows.filter(x=>!q||x.name.toLowerCase().includes(q.toLowerCase()))}
+ const deepMonsterId=Number(new URLSearchParams(location.search).get('monster_id')||0);
+ if((mode==='monster'||mode==='questmob')&&deepMonsterId>0&&!q){
+  const rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=eq.Monster&npc_id=eq.'+deepMonsterId,500,500);
+  return rows.map(x=>normalize(x,mode));
+ }
+ if(q.replace(/\s/g,'').length<2){status('⚔️ Enter at least 2 letters of a monster name and tap Search map.');return []}
+ const safe=q.replace(/[%*,()]/g,'').trim();if(safe.length<2)return [];
+ const rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=eq.Monster&name=ilike.*'+encodeURIComponent(safe)+'*&order=npc_id.asc',500,5000);
+ if(mode==='questmob'){if(!questMobs)questMobs=new Set((await page('quest_involved_monsters','monster_id')).map(r=>Number(r.monster_id)));return rows.filter(x=>questMobs.has(Number(x.npc_id))).map(x=>normalize(x,'questmob'))}
+ return rows.map(x=>normalize(x,'monster'))}
+function metrics(){const el=$('world');baseWidth=el.clientWidth;baseHeight=baseWidth*H/W;$('stage').style.height=baseHeight+'px'}
+function clampPosition(){const el=$('world'),visibleW=el.clientWidth,visibleH=el.clientHeight;const sw=baseWidth*scale,sh=baseHeight*scale;
+ tx=sw<=visibleW?(visibleW-sw)/2:Math.min(0,Math.max(visibleW-sw,tx));ty=sh<=visibleH?(visibleH-sh)/2:Math.min(0,Math.max(visibleH-sh,ty));}
+function updateTransform(){if(!baseWidth)metrics();clampPosition();$('stage').style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';$('viewportNote').textContent='Zoom '+Math.round(scale*100)+'% · '+items.length+' locations · drag with one finger, pinch with two';}
+function fit(){metrics();scale=1;tx=0;ty=0;updateTransform();refreshPinSizes()}
+function zoom(f,cx,cy){let el=$('world');cx??=el.clientWidth/2;cy??=el.clientHeight/2;let next=Math.max(1,Math.min(12,scale*f)),ratio=next/scale;tx=cx-(cx-tx)*ratio;ty=cy-(cy-ty)*ratio;scale=next;updateTransform();refreshPinSizes()}
+function focus(row){selected=row;const pos=pixel(row.x,row.y);let el=$('world');scale=Math.max(2.2,Math.min(6,scale));tx=el.clientWidth/2-pos.x/W*baseWidth*scale;ty=el.clientHeight/2-pos.y/H*baseHeight*scale;updateTransform();render();showQuick();refreshPinSizes()}
+function wikiLink(x){return './index.html?monster_id='+encodeURIComponent(x.id)+'#monster-'+encodeURIComponent(x.id)}
+function npcLink(x){return './npc-details.html?npc_id='+encodeURIComponent(x.id)}
+function nice(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}
+function showQuick(){
+ const q=$('mapQuick'),x=selected;
+ if(!x){q.style.display='none';return}
+ q.style.display='block';
+ $('mapQuickName').textContent=x.name;
+ $('mapQuickMeta').textContent=(x.level?'LVL '+x.level+' · ':'')+(x.kind==='raid'?'Raid Boss · ':'')+(x.zone||x.type||'Unknown area');
+ $('mapQuickFull').href=(x.kind==='raid'||x.kind==='monster'||x.kind==='questmob')?wikiLink(x):npcLink(x);
+ $('mapQuickFull').textContent=x.kind==='raid'?'📖 View Full Details ↗':(x.kind==='monster'||x.kind==='questmob'?'📖 View Mob Details ↗':'📜 NPC & Related Quests ↗');
+ if(x.kind==='raid'){
+   const resp=x.respawn?(x.respawn/3600).toFixed(1)+'h'+(x.respawnRandom?' ± '+(x.respawnRandom/3600).toFixed(1)+'h':''):'Unknown';
+   const hp=x.hp==null?'Unknown':nice(x.hp),xp=x.xp==null?'Unknown':nice(x.xp);
+   const lines=[['⏱️','Respawn',resp],['❤️','HP',hp],['✨','XP ×3',xp],['⚔️','Weakness','Not verified']];
+   $('mapQuickStats').innerHTML='<div class="quicklines">'+lines.map(a=>'<div class="quickline"><span class="quickicon">'+a[0]+'</span><span class="quicklabel">'+a[1]+'</span><strong>'+clean(a[2])+'</strong></div>').join('')+'</div>';
+ }else{
+   $('mapQuickStats').innerHTML='<div class="quicklines"><div class="quickline"><span class="quickicon">📍</span><span class="quicklabel">Coordinates</span><strong>X '+fmt(x.x)+' · Y '+fmt(x.y)+'</strong></div></div>';
+ }
+}
+function refreshPinSizes(){document.querySelectorAll('#pins circle').forEach(c=>c.setAttribute('r',Math.max(1.4,Number(c.classList.contains('selected')?10:6)/scale).toFixed(2)))}
+function drawPins(){const display=items.filter(x=>Number.isFinite(x.x)&&Number.isFinite(x.y)).slice(0,800);let html='';display.forEach((x,i)=>{let p=pixel(x.x,x.y);if(p.x<0||p.x>W||p.y<0||p.y>H)return;let on=selected===x;html+='<circle data-pos="'+i+'" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+Math.max(1.4,(on?10:6)/scale).toFixed(2)+'" fill="'+COLORS[x.kind]+'" class="'+(on?'selected':'')+'"><title>'+clean(x.name)+'</title></circle>'});$('pins').innerHTML=html}
+function render(){drawPins();$('counter').textContent='('+fmt(items.length)+')';$('results').innerHTML=items.slice(0,120).map((x,i)=>'<button class="result '+(selected===x?'active':'')+'" data-i="'+i+'"><b>'+clean(x.name)+'</b><small>'+(x.level?'LVL '+x.level+' · ':'')+'X '+fmt(x.x)+' · Y '+fmt(x.y)+(x.zone?' · '+clean(x.zone):'')+'</small></button>').join('')||'<p class="muted">No results. Try another layer or search term.</p>';
+ if(!selected){$('detail').textContent='Select a marker or a result.';return}const x=selected;let to=x.kind==='raid'?wikiLink(x):x.kind==='monster'||x.kind==='questmob'?'./index.html?monster_id='+x.id:npcLink(x);
+ $('detail').innerHTML='<h3>'+clean(x.name)+'</h3><span class="chip">'+clean(x.kind.toUpperCase())+'</span>'+(x.level?'<span class="chip">LVL '+x.level+'</span>':'')+'<p>📍 X '+fmt(x.x)+' · Y '+fmt(x.y)+' · Z '+fmt(x.z)+'</p>'+(x.zone?'<p>'+clean(x.zone)+'</p>':'')+(x.respawn?'<p class="muted">Reference respawn '+(x.respawn/3600).toFixed(1)+' h</p>':'')+'<small>Classic reference, not Elysion verified.</small><p><a href="'+clean(to)+'">Open relevant Academy guide ↗</a></p>';}
+async function load(){let token=++request;status('⏳ Loading '+mode+' locations…');try{let d=await getData();if(token!==request)return;items=d.filter(x=>Number.isFinite(x.x)&&Number.isFinite(x.y));selected=null;render();showQuick();fit();
+ const params=new URLSearchParams(location.search);
+ const wantedId=Number(params.get(mode==='raid'?'boss_id':mode==='monster'||mode==='questmob'?'monster_id':'npc_id')||0);
+ if(wantedId>0){
+   const target=items.find(x=>x.id===wantedId);
+   if(target){focus(target);requestAnimationFrame(()=>{$('world').scrollIntoView({block:'center',behavior:'instant'})});}
+   else status('⚠️ Requested target #'+wantedId+' not found in current filters. Clear level filters and retry.');
+ }
+ status('🟢 '+fmt(items.length)+' '+mode+' locations loaded from VoLuMaX Database. '+(items.length>800?'Showing first 800 map pins; narrow search for more.':''))}catch(e){if(token!==request)return;status('⚠️ '+e.message+' — try refresh or check database access');items=[];selected=null;render();showQuick()}}
+$('terrain').addEventListener('load',()=>{$('imageState').textContent='✅ Interlude terrain loaded automatically from GitHub · '+$('terrain').naturalWidth+' × '+$('terrain').naturalHeight+' px';fit()});
+$('terrain').addEventListener('error',()=>{$('imageState').textContent='⚠️ Terrain file missing. Upload interlude-world-map.png next to maps-v2-2.html in the repository.'});
+$('tabs').addEventListener('click',e=>{let btn=e.target.closest('[data-mode]');if(!btn)return;mode=btn.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));$('query').value='';load()});
+$('searchBtn').onclick=load;$('query').onkeydown=e=>{if(e.key==='Enter')load()};$('resetBtn').onclick=fit;$('zoomIn').onclick=()=>zoom(1.6);$('zoomOut').onclick=()=>zoom(1/1.6);
+$('results').onclick=e=>{let row=e.target.closest('[data-i]');if(row){const x=items[Number(row.dataset.i)];if(x)focus(x)}};
+$('pins').onclick=e=>{if(suppressTap)return;let row=e.target.closest('[data-pos]');if(row){const x=items[Number(row.dataset.pos)];if(x)focus(x)}};
+$('mapQuickDetails').onclick=()=>{$('detail').scrollIntoView({block:'start',behavior:'smooth'})};$('mapQuickClose').onclick=()=>{$('mapQuick').style.display='none'};
+const world=$('world');
+// Track all touches: single-finger drag, two-finger pinch anchored under the fingers.
+const pointers=new Map();let gesture=null,suppressTap=false;
+function pointerCentre(){const a=[...pointers.values()];return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y)}}
+function localXY(x,y){const r=world.getBoundingClientRect();return {x:x-r.left,y:y-r.top}}
+function beginGesture(){const vals=[...pointers.values()];if(vals.length>=2){const c=pointerCentre(),local=localXY(c.x,c.y);gesture={type:'pinch',distance:Math.max(c.d,1),scale,tx,ty,mapX:(local.x-tx)/scale,mapY:(local.y-ty)/scale};suppressTap=true}
+else if(vals.length===1){const a=vals[0];gesture={type:'pan',x:a.x,y:a.y,tx,ty,moved:false}}else gesture=null}
+world.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;if(e.target.closest('circle')&&pointers.size===0)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});world.setPointerCapture(e.pointerId);beginGesture()});
+world.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!gesture)return;
+if(gesture.type==='pinch'&&pointers.size>=2){const c=pointerCentre(),local=localXY(c.x,c.y);scale=Math.max(1,Math.min(12,gesture.scale*c.d/gesture.distance));tx=local.x-gesture.mapX*scale;ty=local.y-gesture.mapY*scale;updateTransform();refreshPinSizes()}
+else if(gesture.type==='pan'&&pointers.size===1){const a=[...pointers.values()][0];if(Math.hypot(a.x-gesture.x,a.y-gesture.y)>7){gesture.moved=true;suppressTap=true}if(gesture.moved){tx=gesture.tx+(a.x-gesture.x);ty=gesture.ty+(a.y-gesture.y);updateTransform()}}});
+function endPointer(e){pointers.delete(e.pointerId);beginGesture();if(!pointers.size){setTimeout(()=>{suppressTap=false},70)}}
+world.addEventListener('pointerup',endPointer);world.addEventListener('pointercancel',endPointer);
+
+world.addEventListener('wheel',e=>{e.preventDefault();let r=world.getBoundingClientRect();zoom(e.deltaY>0?0.82:1.22,e.clientX-r.left,e.clientY-r.top)},{passive:false});
+window.addEventListener('resize',()=>{let was=scale;metrics();scale=was;updateTransform()});
+let args=new URLSearchParams(location.search);if(['raid','npc','quest','monster','questmob','dungeon'].includes(args.get('mode')))mode=args.get('mode');
+if(mode==='raid'&&args.has('boss_id')){$('lo').value='1';$('hi').value='85';$('query').value='';}
+document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));if(args.get('search'))$('query').value=args.get('search');
+fit();if($('terrain').complete&&$('terrain').naturalWidth){$('imageState').textContent='✅ Map PNG loaded';fit()}load();
+</script></body></html>
