@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071424"><title>VoLuMaX World Map v2.8</title>
+<style>body{margin:0;background:#071424;color:#f0d08c;font:16px system-ui}.boot{max-width:660px;margin:15vh auto;padding:24px;text-align:center}.boot progress{width:100%;accent-color:#eec87c}a{color:#eec87c}</style></head><body>
+<div class="boot" id="boot"><h2>🌍 VoLuMaX World Map v2.8</h2><p>Loading cleaned atlas and spawn database…</p><progress></progress><p id="notice">Loading map engine v2.6</p></div>
+<script>
+(async()=>{
+ try{
+  const r=await fetch('./maps-v2-6.html',{cache:'no-cache'});
+  if(!r.ok)throw Error('Map engine unavailable (HTTP '+r.status+')');
+  let html=await r.text();
+  function patch(before,after,label){if(!html.includes(before))throw Error('Map engine mismatch at '+label);html=html.replace(before,after)}
+  patch('<nav><a href="./index.html">📚 Wiki</a><a href="./quest-guide.html">📜 Quests</a><a href="./leveling-navigator.html">🗺️ Leveling</a><a href="./raid-boss-atlas.html">🐉 Boss Atlas</a><a href="./maps.html">↩ Old Maps</a></nav>','','top links');
+  patch('<header class="hero"><div class="eyebrow">⚔️ VOLUMAX L2 ACADEMY · CLASSIC INTERLUDE</div><h1>🌍 WORLD MAP v2.5</h1><p class="muted">Calibrated real terrain · NPCs · Raid Bosses · Quests · Monsters · Dungeon NPCs</p><p>Three reference cities: <b>Giran, Gludio, Talking Island</b>. The image and markers zoom and pan together.</p></header>',
+   '<header class="hero"><div class="eyebrow">⚔️ VOLUMAX L2 ACADEMY</div><h1>🌍 WORLD MAP</h1><p class="muted">Monsters · NPCs · Quests · Raid Bosses</p></header>','compact hero');
+  patch('<div class="warning">⚠️ Fan-made Classic Interlude reference map, not confirmed Elysion Mobile coordinates. The 3-city alignment is approximate; town icons are not exact NPC spots. Dungeon interiors and floors are not included in this world map.</div>',
+   '<details class="accuracy"><summary>ⓘ About map accuracy</summary><p>Classic Interlude reference locations, not verified for Elysion Mobile. Approximate alignment using three cities; dungeon floors not included.</p></details>','accuracy');
+  patch('<div><label>Min LVL<input id="lo" type="number" min="1" max="99" value="1"></label></div><div><label>Max LVL<input id="hi" type="number" min="1" max="99" value="85"></label></div>',
+   '<div class="levelOptions"><details><summary>⚙️ Level filters</summary><div class="levelGrid"><div><label>Min LVL<input id="lo" type="number" min="1" max="99" value="1"></label></div><div><label>Max LVL<input id="hi" type="number" min="1" max="99" value="85"></label></div></div></details></div>','level filters');
+  // FeedableBeast and FriendlyMob are monster-like NPC classes, not quest NPCs.
+  patch("'npc_type=neq.Monster&order=npc_id.asc'","'npc_type=not.in.(Monster,FeedableBeast,FriendlyMob)&order=npc_id.asc'",'NPC category');
+  patch("'npc_type=eq.Monster&npc_id=eq.'+deepMonsterId","'npc_type=in.(Monster,FeedableBeast,FriendlyMob)&npc_id=eq.'+deepMonsterId",'monster deep link');
+  patch("'npc_type=eq.Monster&name=ilike.*'+encodeURIComponent(safe)","'npc_type=in.(Monster,FeedableBeast,FriendlyMob)&name=ilike.*'+encodeURIComponent(safe)",'monster search');
+  // A single player-facing result per name, all its spawn coordinates remain in items[] for map.
+  patch("const k=x.kind+':'+x.id;let g=unique.get(k);","const k=x.kind+':'+x.name.trim().toLocaleLowerCase();let g=unique.get(k);",'group by name');
+  patch("groups.slice(0,120).map","groups.slice(0,40).map",'results cap');
+  patch('Tap a result to center its marker. Shows one row per NPC/monster type (up to 120 rows); use a more specific name for more.',
+   'One entry per monster or NPC name. Spawn count shows known locations; search for a specific target.','list description');
+  // Display the target summary immediately, rather than forcing users to scroll into a second details panel.
+  patch('<button id="mapQuickDetails" type="button">📍 Coordinates ↓</button>','<button id="mapQuickDetails" type="button">📍 All coordinates ↓</button>','coordinate label');
+  patch('</head>',`<style id="volumax28">
+.hero{padding:11px 14px;margin-bottom:10px}.hero h1{font-size:clamp(25px,6vw,38px);margin:4px 0}.hero p{margin:4px 0;font-size:13px}
+.filters{display:block}.tabs{margin:8px 0}.tabs button{font-size:13px;padding:8px 11px}
+.levelOptions{margin:8px 0}.levelOptions details,.accuracy{border:1px solid #476584;border-radius:10px;padding:9px 12px;color:#c4d8ed}
+.levelOptions summary,.accuracy summary{cursor:pointer;color:#e8ca90;font-size:13px}.levelGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:9px}.accuracy{margin:8px 0}.accuracy p{font-size:12px;line-height:1.4}
+.panel{margin-bottom:10px}.panel h2{margin:3px 0 8px}.actions{gap:7px;margin:8px 0}.actions button{padding:8px 10px}
+.columns .panel>p.muted{font-size:12px}.legend{font-size:11px;gap:9px}.result{padding:10px 12px;margin:5px 0}
+#imageState{font-size:11px;padding:7px 9px}#viewportNote{font-size:11px}
+</style></head>`,'styles');
+  html=html.replace('<title>VoLuMaX · Interlude World Map v2.3</title>','<title>VoLuMaX World Map v2.8</title>');
+  document.open();document.write(html);document.close();
+ }catch(err){document.getElementById('notice').textContent='⚠️ '+err.message;const a=document.createElement('a');a.href='./maps-v2-6.html';a.textContent='Open the last working map';document.getElementById('boot').appendChild(a);}
+})();
+</script></body></html>
