@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VoLuMaX World Map · 3-City Calibration</title>
+<style>
+body{font-family:system-ui;background:#071322;color:#eef6ff;margin:0}
+main{max-width:920px;margin:auto;padding:18px}
+section{background:#10243c;border:1px solid #385873;border-radius:18px;padding:18px;margin:12px 0}
+h1{font-size:clamp(26px,5vw,38px)}label{display:inline-block;cursor:pointer;background:#efc573;color:#152339;padding:12px 17px;border-radius:11px;font-weight:800}
+input{display:none} .map{position:relative;max-width:100%;margin-top:14px}
+.map img{width:100%;height:auto;display:block;border-radius:12px}.pin{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border:3px solid #12dffc;border-radius:50%;box-shadow:0 0 0 3px #071d2c,0 0 0 5px #12dffc;pointer-events:none}
+.pin span{position:absolute;top:-34px;left:8px;white-space:nowrap;background:#0a1b2be8;border:1px solid #e4c479;padding:2px 6px;border-radius:6px;font-size:12px}
+small{color:#b6c9d9}p{line-height:1.5}
+</style></head><body><main><section><h1>🗺️ VoLuMaX 3-City Map Calibration v2</h1><p>The reference map is aligned from Giran, Gludio and Talking Island. No database calls or manual clicks needed.</p>
+<label for="img">📁 Load your original Interlude PNG</label><input type="file" id="img" accept="image/*">
+<p id="status"><small>Select the original 1812×2620 image from your phone.</small></p>
+</section><section><div class="map" id="map"><img id="photo" style="display:none" alt="World map"></div></section>
+<section><p>📍 Cyan circles mark predicted city locations from Interlude game X/Y coordinates. Small differences between a city icon and its NPC are expected.</p>
+<p><b>Calculated bounds:</b> X -129,999.855 to 234,482.75; Y -265,176.086 to 264,583.735.</p>
+<p><small>This is a 3-city approximate calibration, not verified Elysion positions.</small></p></section></main>
+<script>
+const cities=[{"name": "Giran / Clarissa", "u": 0.5854746136865343, "v": 0.7797480916030535}, {"name": "Gludio / Bella", "u": 0.3217273730684327, "v": 0.7323931297709924}, {"name": "Talking Island / Roxxy", "u": 0.12591059602649007, "v": 0.9622862595419848}];
+let url=null;document.getElementById('img').onchange=(e)=>{let f=e.target.files?.[0];if(!f)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);let photo=document.getElementById('photo');photo.onload=()=>{photo.style.display='block';let map=document.getElementById('map');map.querySelectorAll('.pin').forEach(p=>p.remove());cities.forEach(c=>{let pin=document.createElement('div');pin.className='pin';pin.style.left=(c.u*100)+'%';pin.style.top=(c.v*100)+'%';let s=document.createElement('span');s.textContent=c.name;pin.appendChild(s);map.appendChild(pin)});document.getElementById('status').textContent='✅ Image loaded · '+photo.naturalWidth+' × '+photo.naturalHeight+' px';};photo.src=url;};
+</script></body></html>
