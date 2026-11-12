@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VoLuMaX Map Calibration — Third City Check</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#071423;color:#eaf3ff}*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#193550,#071423 65%)}main{max-width:930px;margin:auto;padding:16px 12px 80px}
+section{background:#112741;border:1px solid #415f7e;border-radius:17px;padding:17px;margin:13px 0}
+h1{font-size:clamp(27px,6vw,40px);line-height:1.1;margin:12px 0}h2{font-size:19px}
+button,.filebtn{display:inline-block;border-radius:11px;border:1px solid #7b9ab7;background:#1b3957;color:#fff;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer}
+.filebtn,.gold{background:#e9c276;color:#142639;border-color:#e9c276}input[type=file]{display:none}
+.controls{display:flex;gap:10px;flex-wrap:wrap}.notice{border:1px solid #476887;border-radius:10px;background:#0a2036;padding:12px;margin:10px 0;color:#c8daed}
+#canvas{position:relative;border:1px solid #5a7793;background:#071525;border-radius:12px;overflow:hidden;margin-top:14px}
+#photo{display:block;width:100%;height:auto}
+.marker{position:absolute;transform:translate(-50%,-100%);pointer-events:none;font-size:26px;filter:drop-shadow(0 1px 2px black)}
+.marker span{display:block;background:#0b1a2de8;border:1px solid #eac275;color:#fff;border-radius:7px;font-size:12px;padding:3px 6px;white-space:nowrap;max-width:240px}
+#observed{color:#fff;font-weight:bold}
+pre{background:#09192b;border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-word;font-size:13px}
+small{color:#b0c5d9}.hidden{display:none}a{color:#f5d18b}
+</style></head>
+<body><main>
+<section><small>⚔️ VoLuMaX L2 Academy · MAP CALIBRATION LAB</small><h1>🎯 Verify the third town — Gludio</h1><p>Verify your saved Giran + Talking Island calibration against <b>Gludio (Gatekeeper Bella)</b>. No NPC database calls or monster markers needed. Files stay in your browser.</p></section>
+<section><h2>1. Load your two saved files</h2>
+<div class="controls"><label class="filebtn" for="imgfile">🗺️ Choose the same Interlude PNG</label><input id="imgfile" type="file" accept="image/png,image/jpeg,image/webp">
+<label class="filebtn" for="jsonfile">📋 Choose saved calibration JSON</label><input id="jsonfile" type="file" accept=".json,application/json"></div>
+<div id="imgstatus" class="notice">🟡 Image not loaded</div><div id="jsonstatus" class="notice">🟡 Calibration JSON not loaded</div>
+</section>
+<section><h2>2. Compare the predicted Gludio location</h2><p>The <b>yellow target 🎯</b> is where our stored X/Y coordinates predict Gludio to be. The town should appear directly beneath it. Once both files load, choose <b>Mark actual Gludio</b>, then tap its true center on the map.</p>
+<div class="controls"><button id="markbtn" disabled>📍 Mark actual Gludio</button><button id="clearbtn" disabled>↺ Clear check</button></div>
+<div id="hint" class="notice">Load the image and JSON first.</div>
+<div id="canvas"><div id="blank" style="padding:90px 15px;text-align:center;color:#9cb6d1">World map will appear here.</div><img id="photo" alt="Interlude world map" style="display:none"></div>
+</section>
+<section><h2>3. Calibration accuracy</h2><div class="notice" id="result">Waiting for image, JSON and a Gludio tap.</div>
+<pre id="details">Reference NPC: Gatekeeper Bella (Gludio), X -12,736, Y 122,816.</pre>
+<p><small>The source map is an illustration and NPC location is not necessarily the exact town center. A small deviation is expected. This checks the coordinate overlay, not Elysion-specific locations.</small></p></section>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id);
+const GLUDIO={name:'Gatekeeper Bella · Gludio',x:-12736,y:122816};
+let cal=null,imgReady=false,predicted=null,observed=null,marking=false,objURL=null;
+function resetPins(){document.querySelectorAll('.marker').forEach(x=>x.remove())}
+function pin(u,v,label,emoji,id){let x=document.createElement('div');x.className='marker';x.id=id;x.style.left=(u*100)+'%';x.style.top=(v*100)+'%';x.textContent=emoji;let tag=document.createElement('span');tag.textContent=label;x.appendChild(tag);$('canvas').appendChild(x)}
+function refresh(){resetPins();const ok=imgReady&&cal;if(!ok){$('markbtn').disabled=true;$('hint').textContent='Load the image and the saved JSON first.';return}
+const b=cal.bounds;predicted={u:(GLUDIO.x-b.minx)/(b.maxx-b.minx),v:(GLUDIO.y-b.miny)/(b.maxy-b.miny)};
+if(!Number.isFinite(predicted.u)||!Number.isFinite(predicted.v)||predicted.u<0||predicted.u>1||predicted.v<0||predicted.v>1){$('result').textContent='⚠️ Predicted Gludio is outside the image. Check that your calibration JSON matches this map.';return}
+pin(predicted.u,predicted.v,'Predicted Gludio · Bella','🎯','predicted');if(observed)pin(observed.u,observed.v,'Your Gludio point','📍','observed');
+$('markbtn').disabled=false;$('clearbtn').disabled=!observed;
+$('hint').textContent=marking?'👆 Now tap the actual Gludio town on the map.':'🎯 Yellow target shows predicted Gludio. Press “Mark actual Gludio” to compare.';
+if(!observed){$('result').textContent='🟡 Predicted point shown. Tap the actual Gludio town to measure the offset.';return}
+const pixelWidth=cal.image?.width||$('photo').naturalWidth;
+const pixelHeight=cal.image?.height||$('photo').naturalHeight;
+const dxPx=(observed.u-predicted.u)*pixelWidth,dyPx=(observed.v-predicted.v)*pixelHeight;
+const dxGame=(observed.u-predicted.u)*(b.maxx-b.minx),dyGame=(observed.v-predicted.v)*(b.maxy-b.miny);
+const distPx=Math.hypot(dxPx,dyPx),distGame=Math.hypot(dxGame,dyGame);
+$('result').textContent='📏 Offset: '+Math.round(distPx)+' image pixels ('+Math.round(distGame).toLocaleString('en-US')+' game XY units). Compare positions visually; small town-center/NPC differences are normal.';
+$('details').textContent=JSON.stringify({thirdCity:'Gludio / Gatekeeper Bella',npcCoordinates:GLUDIO,expectedPixelFraction:{u:+predicted.u.toFixed(6),v:+predicted.v.toFixed(6)},actualPixelFraction:observed,pixelDelta:{x:Math.round(dxPx),y:Math.round(dyPx)},gameDelta:{x:Math.round(dxGame),y:Math.round(dyGame)},distancePixels:Math.round(distPx),distanceGameXY:Math.round(distGame)},null,2);
+}
+$('imgfile').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){$('imgstatus').textContent='⚠️ Choose PNG/JPG';return}
+if(f.size>25*1024*1024){$('imgstatus').textContent='⚠️ Image too large for mobile (limit 25 MB).';return}
+if(objURL)URL.revokeObjectURL(objURL);objURL=URL.createObjectURL(f);let img=$('photo');img.onload=()=>{img.style.display='block';$('blank').style.display='none';imgReady=true;observed=null;$('imgstatus').textContent='✅ '+f.name+' · '+img.naturalWidth+' × '+img.naturalHeight+' px';refresh()};img.onerror=()=>{$('imgstatus').textContent='⚠️ Failed to open image.'};img.src=objURL;});
+$('jsonfile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());const b=d.bounds;if(!b||!['minx','maxx','miny','maxy'].every(k=>Number.isFinite(b[k]))||b.maxx<=b.minx||b.maxy<=b.miny)throw Error('JSON has no valid map bounds');cal=d;observed=null;$('jsonstatus').textContent='✅ Calibration loaded: '+f.name;refresh()}catch(err){cal=null;$('jsonstatus').textContent='⚠️ '+err.message;refresh()}});
+$('markbtn').onclick=()=>{marking=true;refresh();$('photo').scrollIntoView({behavior:'smooth',block:'center'})};
+$('clearbtn').onclick=()=>{observed=null;marking=false;refresh()};
+$('photo').addEventListener('click',e=>{if(!marking||!imgReady||!cal)return;let r=e.currentTarget.getBoundingClientRect();observed={u:+(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))).toFixed(6),v:+(Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))).toFixed(6)};marking=false;refresh()});
+</script></body></html>
