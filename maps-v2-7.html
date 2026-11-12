@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071424"><title>VoLuMaX World Map v2.7</title>
+<style>body{margin:0;background:#071424;color:#eec87c;font:16px system-ui}.boot{max-width:650px;margin:18vh auto;padding:25px;text-align:center}.boot progress{width:100%;accent-color:#eec87c}a{color:#eec87c}</style></head><body>
+<div class="boot" id="boot"><h2>🗺️ VoLuMaX World Map v2.7</h2><p>Loading the interactive atlas…</p><progress></progress><p id="notice">Connecting to existing map engine</p></div>
+<script>
+(async function(){
+try{
+ const response=await fetch('./maps-v2-6.html',{cache:'no-cache'});
+ if(!response.ok)throw Error('Maps v2.6 is missing: HTTP '+response.status);
+ let html=await response.text();
+ if(!html.includes('const unique=new Map()'))throw Error('Unexpected map engine version. Nothing was changed.');
+ // Remove duplicate Academy tabs, including Old Maps. Discord already supplies topic navigation.
+ html=html.replace(/<nav>\s*<a[\s\S]*?<\/nav>/i,'');
+ // Compact hero, removing long repeated explanatory paragraphs.
+ html=html.replace(/<header class="hero">[\s\S]*?<\/header>/i,
+  '<header class="hero"><div class="eyebrow">⚔️ VOLUMAX L2 ACADEMY</div><h1>🌍 WORLD MAP</h1><p class="muted">NPCs · Quests · Raid Bosses · Monsters</p></header>');
+ // Keep accuracy information available without forcing every user to scroll past it.
+ html=html.replace(/<div class="warning">⚠️ Fan-made[\s\S]*?<\/div>/i,
+ '<details class="accuracy"><summary>ⓘ Map accuracy & data sources</summary><p>Fan-made Classic Interlude reference. Coordinates are not confirmed for Elysion Mobile. Three-city map alignment is approximate; dungeon interior floors are not shown.</p></details>');
+ // Put min and max level controls behind optional settings, without removing filtering logic.
+ html=html.replace(/<div><label>Min LVL<input id="lo"[\s\S]*?<\/label><\/div><div><label>Max LVL<input id="hi"[\s\S]*?<\/label><\/div>/i,
+ '<div class="levelOptions"><details><summary>⚙️ Level filters</summary><div class="levelGrid"><div><label>Min LVL<input id="lo" type="number" min="1" max="99" value="1"></label></div><div><label>Max LVL<input id="hi" type="number" min="1" max="99" value="85"></label></div></div></details></div>');
+ // v2.6 already groups each monster/NPC ID into one row with its spawn count.
+ // Show a manageable first page; search to narrow the list.
+ html=html.replace('groups.slice(0,120).map','groups.slice(0,40).map');
+ html=html.replace('Shows one row per NPC/monster type (up to 120 rows); use a more specific name for more.',
+  'One entry per target type, with its registered spawn count. Showing up to 40 types; search to narrow results.');
+ html=html.replace(/<footer>[\s\S]*?<\/footer>/i,'<footer>VoLuMaX Gaming · Classic Interlude reference · Locations not independently verified in Elysion Mobile</footer>');
+ // Style changes only; leave original map transforms, markers, Supabase and deep links intact.
+ const addedCSS=`<style id="volumax-v27">
+ .hero{padding:12px 14px;margin-bottom:10px}.hero h1{font-size:clamp(27px,6vw,38px);margin:5px 0}.hero .muted{margin:0;font-size:13px}
+ .tabs{margin:10px 0}.tabs button{padding:8px 10px;font-size:13px}
+ .filters{display:block}.filters>div:first-child{max-width:100%}.filters input{margin-top:6px}
+ .levelOptions{margin:8px 0}.levelOptions>details{border:1px solid #476584;border-radius:10px;padding:8px 12px;background:#0b1e33}
+ .levelOptions summary{cursor:pointer;color:#ddc48c;font-size:13px;font-weight:650}
+ .levelGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+ .accuracy{margin-top:10px;border:1px solid #425c74;border-radius:9px;padding:7px 11px;color:#b9cddd}
+ .accuracy summary{cursor:pointer;font-size:12px}.accuracy p{font-size:12px;line-height:1.5;margin:8px 0}
+ .panel{margin-bottom:10px}.panel h2{margin:2px 0 8px}.actions{gap:7px;margin:10px 0}.actions button{padding:8px 10px}
+ .legend{font-size:11px;gap:9px;margin:6px 0 9px}.columns .panel>p.muted{font-size:12px;margin:4px 0 10px}
+ #imageState{font-size:11px;padding:7px 9px}#viewportNote{margin:7px 0;font-size:11px}
+ </style>`;
+ html=html.replace('</head>',addedCSS+'</head>');
+ html=html.replace(/WORLD MAP v2\.5/g,'WORLD MAP v2.7');
+ document.open();document.write(html);document.close();
+}catch(err){document.getElementById('notice').textContent='⚠️ '+err.message;const a=document.createElement('a');a.href='./maps-v2-6.html';a.textContent='Open working Maps v2.6';document.getElementById('boot').appendChild(a)}
+})();
+</script></body></html>
