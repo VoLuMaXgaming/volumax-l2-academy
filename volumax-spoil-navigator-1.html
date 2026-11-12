@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#081426">
+<title>VoLuMaX Academy — Spoil Navigator</title>
+<style>
+:root{color-scheme:dark;--bg:#081426;--panel:#10233d;--border:#37516f;--gold:#f0c47c;--mute:#aabdd2;--fg:#eff5ff;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--fg)}*{box-sizing:border-box}body{margin:0;line-height:1.48;background:radial-gradient(ellipse at top,#1c3453,#081426 55%)}main{max-width:1000px;margin:auto;padding:16px 14px 60px}.nav{display:flex;flex-wrap:wrap;gap:9px}.nav a{border:1px solid #527091;background:#1a3452;border-radius:11px;color:#eef5ff;padding:9px 12px;text-decoration:none;font-size:14px}.hero,.panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;margin:16px 0}.hero{background:linear-gradient(120deg,#153653,#0c1b30);border-color:#896e47}.eyebrow{color:var(--gold);font-weight:750;letter-spacing:1.2px;font-size:12px}h1{font-size:clamp(27px,6vw,42px);line-height:1.1;margin:10px 0}h2{font-size:21px;margin:0 0 10px}.muted,.detail{color:var(--mute)}.warning{border-left:3px solid var(--gold);background:#2e2a24;padding:12px;border-radius:9px;color:#edd9b8}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}label{display:block;font-size:13px;color:var(--mute);margin-bottom:5px}input,select{width:100%;min-height:47px;border:1px solid #5b7694;border-radius:10px;padding:11px;background:#091929;color:#fff;font:inherit}button{border:0;background:var(--gold);color:#172437;font-weight:800;border-radius:11px;padding:12px 18px;cursor:pointer;font:inherit;font-weight:800}button:disabled{opacity:.55;cursor:wait}.actions{margin:14px 0}.card{background:#091b31;border:1px solid #344e6b;border-radius:14px;margin:13px 0;padding:16px}.card h3{margin:0 0 6px;color:#f0c47c;font-size:20px}.card .meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.tag{background:#26425c;border-radius:7px;padding:4px 8px;font-size:12px}.row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid #2b425b;flex-wrap:wrap}.row strong{color:#f1cc8c}.link{color:#a9d0ff}#status{padding:10px 0;color:#c4d4e8}.error{color:#ffb9a8!important}.hint{font-size:12px;color:var(--mute)}footer{font-size:13px;color:var(--mute);margin-top:26px}@media(max-width:500px){.hero,.panel{padding:15px}.card{padding:13px}}
+</style>
+</head><body><main>
+<nav class="nav" aria-label="VoLuMaX Wiki navigation"><a href="./">📚 Main Wiki</a><a href="./VoLuMaX_Navigators_v1-2.html">🔨 Craft · Equipment · Pets</a><a href="./leveling-navigator.html">🗺️ Leveling</a><a href="./quest-guide.html">📜 Quests</a><a href="./raid-boss-atlas.html">🐉 Bosses</a></nav>
+<header class="hero"><div class="eyebrow">VoLuMaX L2 ACADEMY · CLASSIC INTERLUDE REFERENCE</div><h1>⛏️ Spoil Navigator</h1><p class="muted">Search a material, find the monsters that spoil it, compare levels and see available location information.</p><div class="warning">These are imported Classic Interlude reference records, not verified Elysion Mobile rates or spawn locations. Raw imported chance numbers are intentionally not displayed as percentages.</div></header>
+<section class="panel"><h2>Find spoil sources</h2><form id="form"><div class="grid"><div><label for="item">Item / material name</label><input id="item" placeholder="e.g. Varnish, Steel, Animal Bone" minlength="2" maxlength="80" required></div><div><label for="min">Minimum monster level</label><input id="min" type="number" min="1" max="100" value="1"></div><div><label for="max">Maximum monster level</label><input id="max" type="number" min="1" max="100" value="80"></div></div><div class="actions"><button id="submit" type="submit">Find spoil mobs</button></div></form><div id="status" role="status">Enter at least 2 characters to begin.</div><div id="results" aria-live="polite"></div></section>
+<footer>VoLuMaX Gaming · Fan-made game guide · Not affiliated with NCSoft · Elysion settings require in-game confirmation.</footer>
+</main>
+<script>
+'use strict';
+const API=location.hostname.endsWith('.discordsays.com')?'/supabase/rest/v1/':'https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+// Public publishable browser key; never add service_role credentials here.
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\"':'&quot;',"'":'&#39;'}[c]));
+const safeInt=(v,f)=>Number.isFinite(Number(v))?Math.min(100,Math.max(1,Math.trunc(Number(v)))):f;
+async function db(path){let resp=await fetch(API+path,{headers:{apikey:KEY,Accept:'application/json'}});if(!resp.ok)throw new Error('Supabase HTTP '+resp.status+' ('+path.split('?')[0]+')');return await resp.json()}
+function setStatus(s,error=false){$('status').textContent=s;$('status').className=error?'error':''}
+$('form').addEventListener('submit',async ev=>{ev.preventDefault();$('results').replaceChildren();const name=$('item').value.trim().replace(/[%*,()]/g,'');const min=safeInt($('min').value,1),max=safeInt($('max').value,80);if(name.length<2){setStatus('Enter at least two letters.',true);return}if(min>max){setStatus('Minimum level must be less than or equal to maximum level.',true);return}
+ $('submit').disabled=true;setStatus('Finding matching items...');try{
+ const items=await db('items?select=id,name,grade&name=ilike.*'+encodeURIComponent(name)+'*&order=name.asc&limit=60');if(!items.length){setStatus('No matching items found. Try another spelling.');return}
+ const ids=items.map(x=>x.id);setStatus('Searching spoil sources for '+ids.length+' matching items...');
+ const path='spoil_material_sources?select=item_id,item_name,item_grade,monster_id,monster_name,monster_level,aggressive,location_name,region_name,min_amount,max_amount,verified_for_elysion&item_id=in.('+ids.join(',')+')&monster_level=gte.'+min+'&monster_level=lte.'+max+'&order=monster_level.asc,monster_name.asc&limit=500';
+ const rows=await db(path);const itemIds=new Set(rows.map(x=>x.item_id));setStatus(rows.length+' spoil-source rows found for '+itemIds.size+' materials'+(rows.length>=500?' · showing first 500; narrow your search':''));if(!rows.length){$('results').textContent='No recorded Spoil sources in this level range. This does not prove the item is unobtainable.';return}
+ const byItem=new Map();for(const row of rows){if(!byItem.has(row.item_id))byItem.set(row.item_id,[]);byItem.get(row.item_id).push(row)}
+ for(const [id,rs] of byItem){const box=document.createElement('article');box.className='card';const title=document.createElement('h3');title.textContent=rs[0].item_name+' · '+rs.length+' sources';box.append(title);for(const row of rs){const line=document.createElement('div');line.className='row';const left=document.createElement('span');left.textContent='Lvl '+row.monster_level+' · '+row.monster_name;const right=document.createElement('span');right.className='detail';right.textContent=(row.location_name||row.region_name||'Location not confirmed')+' · Qty '+row.min_amount+'–'+row.max_amount;line.append(left,right);box.append(line)}$('results').append(box)}
+ }catch(e){setStatus('Database request failed: '+e.message,true)}finally{$('submit').disabled=false}
+});
+const prefill=new URLSearchParams(location.search).get('item');if(prefill){$('item').value=prefill;$('form').requestSubmit()}
+</script></body></html>
