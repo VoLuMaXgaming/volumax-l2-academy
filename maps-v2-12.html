@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071424">
+<title>VoLuMaX World Map v2.12</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#ecf5ff;background:#061324;--gold:#eec87c;--line:#385978;--muted:#b3c8dd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#19364f,#061324 66%)}main{max-width:1100px;padding:12px 12px 45px;margin:auto}
+.hero,.panel{background:#10243d;border:1px solid var(--line);border-radius:19px;padding:16px;margin-bottom:13px}.hero{border-color:#94754c;background:linear-gradient(135deg,#162f4c,#0c2138)}h1{font-size:clamp(30px,7vw,47px);line-height:1.14;margin:9px 0}h2{font-size:20px;margin:4px 0 12px}.muted{color:var(--muted)}.eyebrow{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:2px}
+nav,.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap}nav a,.tabs button,.actions button{border:1px solid #597895;border-radius:11px;background:#23415d;color:white;padding:10px 13px;font:inherit;text-decoration:none;cursor:pointer}nav{margin-bottom:12px}.tabs{margin:14px 0}.tabs button.active{background:var(--gold);color:#18283b;border-color:var(--gold);font-weight:800}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end}.filters label{font-size:12px;color:var(--muted)}input{width:100%;background:#071b30;color:#fff;border:1px solid #557592;border-radius:11px;padding:12px;font:inherit;margin-top:5px}.actions{margin:12px 0}.actions button{font-size:14px}.status{border:1px solid #547690;background:#091c30;color:#c8e1f4;border-radius:11px;padding:12px;margin-top:12px}.warning{border-left:4px solid #e6bd78;background:#342d29;color:#f1d8b4;border-radius:8px;padding:10px 12px;margin-top:11px;font-size:13px}
+#world{position:relative;height:min(75vh,740px);min-height:420px;background:#08192b;border:1px solid #476783;border-radius:15px;overflow:hidden;touch-action:none;cursor:grab;user-select:none}#world:active{cursor:grabbing}
+#stage{position:absolute;left:0;top:0;width:100%;transform-origin:0 0;will-change:transform}#stage img{width:100%;height:auto;display:block;pointer-events:none;-webkit-user-drag:none}#layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible}#pins circle{stroke:#071b2a;stroke-width:2.5;vector-effect:non-scaling-stroke;cursor:pointer}#pins circle.selected{stroke:#fff;stroke-width:3}#pins circle:hover{stroke:#fff6cc}
+#pins text{font:700 11px system-ui,sans-serif;fill:#fff;stroke:#061523;stroke-width:2px;paint-order:stroke;pointer-events:none}#pins circle.cluster{stroke:#e6cc8d;stroke-width:1.8}#pins circle.selected{stroke:#fff;stroke-width:3}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#bad0e5;margin:12px 0}.legend b{font-size:17px}#viewportNote{font-size:12px;color:#bdd2e7;margin-top:9px}
+.columns{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}.result{display:block;width:100%;padding:11px 12px;background:#17324c;border:1px solid #416482;border-radius:10px;color:#fff;text-align:left;margin:7px 0;cursor:pointer}.result.active{border-color:#f1ce8a;background:#2a4760}.result b,.result small{display:block}.result small{color:#bad0de;margin-top:2px}.detail{border:1px solid #766448;border-radius:12px;background:#152e46;padding:14px;min-height:130px}.detail a{display:inline-block;color:#f5c97d;margin-top:12px}.chip{display:inline-block;background:#234964;padding:5px 9px;border-radius:9px;margin:3px 4px 3px 0;font-size:12px}
+footer{font-size:12px;color:#93acc5;text-align:center;padding-top:10px}@media(max-width:720px){.filters{grid-template-columns:2fr 1fr 1fr}.columns{grid-template-columns:1fr}.panel,.hero{padding:13px}}@media(max-width:430px){.filters{grid-template-columns:1fr 1fr}.filters>div:first-child{grid-column:span 2}}
+#mapQuick{position:absolute;left:10px;right:10px;bottom:10px;z-index:5;background:#07192eea;border:1px solid #d9b875;border-radius:12px;padding:10px 12px;color:#fff;display:none;box-shadow:0 3px 15px #0008;max-width:470px}
+#mapQuick b{display:block;color:#f1cf8c;font-size:14px}#mapQuick span{font-size:12px;color:#bcd0e5}#mapQuick button{font:inherit;font-size:12px;background:#294766;border:1px solid #8caac4;border-radius:8px;padding:5px 7px;color:white;cursor:pointer}
+#mapQuick{max-height:min(52vh,390px);overflow-y:auto;overscroll-behavior:contain;max-width:460px}
+.quickhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.quicktitle{min-width:0}.quicktitle b{font-size:16px;line-height:1.3}
+.quickstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:10px 0}
+.quickstat{background:#15304a;border:1px solid #335777;border-radius:8px;padding:7px;font-size:12px;min-width:0;overflow-wrap:anywhere}
+.quickstat strong{display:block;color:#ffda94;font-size:14px;margin-top:3px}
+.quickmeta{font-size:12px;line-height:1.4;color:#c6daed}
+.quickactions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.quickactions a,.quickactions button{border:1px solid #d9b875;border-radius:8px;color:#102238;background:#eec87c;padding:8px 10px;text-decoration:none;font-weight:800;font-size:12px}
+
+#mapQuickClose{flex-shrink:0}
+
+/* v2.3 — compact map card: no DROP/SPOIL preview, no stat tiles */
+#mapQuick{padding:10px 12px;max-height:none;overflow:visible;max-width:390px;background:#07192ef5}
+#mapQuick .quicktitle b{font-size:15px}
+#mapQuick .quicktitle span{display:block;font-size:11px;line-height:1.3;margin-top:3px}
+.quicklines{display:grid;gap:3px;margin:9px 0 5px}
+.quickline{display:grid;grid-template-columns:20px 77px minmax(0,1fr);align-items:center;gap:6px;font-size:12px;line-height:1.4}
+.quickicon{font-size:13px}.quicklabel{color:#b7cee4}.quickline strong{color:#efcc89;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+#mapQuick .quickactions{margin-top:9px}
+#mapQuick .quickactions a,#mapQuick .quickactions button{font-size:11px;padding:7px 9px}
+@media(max-width:430px){#mapQuick{left:7px;right:7px;bottom:7px;padding:9px 10px}}
+</style><style id="volumax28">
+.hero{padding:11px 14px;margin-bottom:10px}.hero h1{font-size:clamp(25px,6vw,38px);margin:4px 0}.hero p{margin:4px 0;font-size:13px}
+.filters{display:block}.tabs{margin:8px 0}.tabs button{font-size:13px;padding:8px 11px}
+.levelOptions{margin:8px 0}.levelOptions details,.accuracy{border:1px solid #476584;border-radius:10px;padding:9px 12px;color:#c4d8ed}
+.levelOptions summary,.accuracy summary{cursor:pointer;color:#e8ca90;font-size:13px}.levelGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:9px}.accuracy{margin:8px 0}.accuracy p{font-size:12px;line-height:1.4}
+.panel{margin-bottom:10px}.panel h2{margin:3px 0 8px}.actions{gap:7px;margin:8px 0}.actions button{padding:8px 10px}
+.columns .panel>p.muted{font-size:12px}.legend{font-size:11px;gap:9px}.result{padding:10px 12px;margin:5px 0}
+#imageState{font-size:11px;padding:7px 9px}#viewportNote{font-size:11px}
+</style><style id="v29style">
+#levelMode{margin:0 0 12px;border:1px solid #9d7d46;border-radius:17px;background:linear-gradient(135deg,#142e48,#0d2037);padding:12px}
+#levelMode[hidden]{display:none!important}#levelMode{margin:12px 0 4px;border:0;padding:8px 0;background:none}#levelMode>summary{display:none!important}.level-selected>.filters,.level-selected>.actions{display:none!important}#levelTab.active{background:#eec87c;color:#10233a;border-color:#eec87c;font-weight:750}
+#levelMode>summary{cursor:pointer;font-size:18px;font-weight:750;color:#f3d38c;list-style:none}#levelMode>summary:after{content:'⌄';float:right}#levelMode[open]>summary:after{content:'⌃'}
+#levelMode .lvgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}#levelMode label{font-size:12px;color:#c0d1e2}#levelMode input,#levelMode select{width:100%;background:#071b30;color:white;border:1px solid #526f8c;padding:9px;border-radius:9px;font:inherit;margin-top:5px}
+#levelMode .lvgoals{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}#levelMode button{background:#23415d;color:white;border:1px solid #597895;border-radius:9px;padding:9px 12px;font-size:13px;cursor:pointer}#levelMode button.chosen,#levelMode #lvFind{background:#eec87c;color:#132337;font-weight:800}#levelMode .lvadvanced{border:1px solid #46627c;border-radius:12px;padding:10px;margin:10px 0}#levelMode .lvadvanced summary{cursor:pointer;color:#f1d18e}
+#lvResults{margin-top:10px}#lvResults .lvzone{border:1px solid #47647d;background:#142e47;padding:10px;margin:8px 0;border-radius:11px}#lvResults .lvzone b{color:#ffe2a0}#lvResults .lvzone small{display:block;color:#b9cee2;margin:6px 0}#lvResults .lvzone button{background:#eec87c;color:#14283d;font-weight:800}
+#lvState{font-size:12px;color:#c6dbef;padding:8px 0}#levelMode .lvnote{font-size:11px;color:#9eb5cd;line-height:1.5}
+@media(max-width:420px){#levelMode .lvgrid{gap:6px}#levelMode .lvzone{padding:9px}}
+</style></head><body><main>
+
+<header class="hero"><div class="eyebrow">⚔️ VOLUMAX L2 ACADEMY</div><h1>🌍 WORLD MAP</h1><p class="muted">Monsters · NPCs · Quests · Raid Bosses</p></header>
+<details id="levelMode"><summary>⚔️ Leveling Mode · Find best hunting zones</summary>
+<div class="lvgrid"><div><label for="lvCharacter">Character LVL</label><input id="lvCharacter" type="number" min="1" max="80" value="28"></div><div><label for="lvParty">Hunting style</label><select id="lvParty"><option value="solo">Solo</option><option value="party">Party</option></select></div></div>
+<div class="lvgoals" id="lvGoals"><button class="chosen" type="button" data-goal="xp">⚔️ XP</button><button type="button" data-goal="adena">💰 Adena</button><button type="button" data-goal="spoil">⛏️ Spoil</button></div>
+<details class="lvadvanced" id="lvAdvanced"><summary>⚙️ Advanced Filters</summary>
+<div class="lvgrid"><div><label for="lvClass">Class / Playstyle</label><select id="lvClass"><option value="fighter">Fighter / Melee</option><option value="mage">Mage</option><option value="spoiler">Spoiler</option><option value="crafter">Crafter</option><option value="archer">Archer</option><option value="tank">Tank</option><option value="healer">Healer</option><option value="support">Support / Buffer</option></select></div><div><label for="lvBehaviour">Monster behaviour</label><select id="lvBehaviour"><option value="all">All</option><option value="passive">Non-aggressive</option><option value="aggressive">Aggressive</option></select></div></div>
+<label style="display:flex;align-items:center;gap:8px;margin:8px 0"><input type="checkbox" id="lvOverride" style="width:18px;height:18px;margin:0"> Custom monster LVL range</label>
+<div class="lvgrid"><div><label for="lvMin">Min mob LVL</label><input id="lvMin" type="number" min="1" max="85" value="26" disabled></div><div><label for="lvMax">Max mob LVL</label><input id="lvMax" type="number" min="1" max="85" value="30" disabled></div></div>
+<p class="lvnote">Default: character LVL −2 to +2 (preferred hunting range). Custom range can include targets with XP penalties or higher combat difficulty. Server-specific formulas are not verified.</p>
+</details><button id="lvFind" type="button">🎯 Recommend zones</button><div id="lvState" role="status" aria-live="polite">Select your level to see suggested hunting areas.</div><div id="lvResults"></div>
+<p class="lvnote">Classic Interlude reference. The map shows only stored spawn coordinates; recommendations are estimates, not verified Elysion Mobile locations. Adena rankings use known reference Adena entries when available.</p>
+</details><section class="panel"><h2>🎯 Find locations</h2>
+<div class="tabs" id="tabs"><button class="active" data-mode="raid">🐉 Raid Boss</button><button data-mode="npc">🧙 NPC</button><button data-mode="quest">📜 Quest NPC</button><button data-mode="monster">⚔️ Monster</button><button data-mode="questmob">🎯 Quest Mob</button><button data-mode="dungeon">🚪 Dungeon NPC</button></div>
+<div class="filters"><div><label>Search name<input id="query" type="search" placeholder="Name or part of name"></label></div><div class="levelOptions"><details><summary>⚙️ Level filters</summary><div class="levelGrid"><div><label>Min LVL<input id="lo" type="number" min="1" max="99" value="1"></label></div><div><label>Max LVL<input id="hi" type="number" min="1" max="99" value="85"></label></div></div></details></div></div>
+<div class="actions"><button id="searchBtn">🔎 Search map</button><button id="resetBtn">♻️ Reset view</button><button id="zoomIn">＋ Zoom in</button><button id="zoomOut">－ Zoom out</button></div>
+<div class="status" id="status" role="status">⏳ Connecting to VoLuMaX Database…</div>
+<details class="accuracy"><summary>ⓘ About map accuracy</summary><p>Classic Interlude reference locations, not verified for Elysion Mobile. Approximate alignment using three cities; dungeon floors not included.</p></details></section>
+<section class="panel"><h2>🗺️ Aden & Elmore</h2><div class="legend"><span>🟠 Raid Boss</span><span>🟢 NPC</span><span>🟣 Quest NPC</span><span>🟡 Monster</span><span>🔴 Quest Mob</span><span>🔵 Dungeon</span></div>
+<div id="world"><div id="stage"><img id="terrain" src="./interlude-world-map.png" alt="Lineage II Interlude world terrain"><svg id="layer" viewBox="0 0 1812 2620" preserveAspectRatio="none"><g id="pins"></g></svg></div><div id="mapQuick" role="region" aria-label="Selected monster quick information">
+<div class="quickhead"><div class="quicktitle"><b id="mapQuickName"></b><span id="mapQuickMeta"></span></div><button id="mapQuickClose" type="button" aria-label="Close card">✕</button></div>
+<div id="mapQuickStats"></div>
+<div class="quickactions"><a id="mapQuickFull" href="./index.html">📖 View Full Details ↗</a><button id="mapQuickDetails" type="button">📍 All coordinates ↓</button></div>
+</div></div>
+<p id="viewportNote">Drag to pan • Pinch with two fingers to zoom • Tap a marker • Use search for monsters</p>
+<div class="status" id="imageState">⏳ Checking terrain PNG…</div></section>
+<div class="columns"><section class="panel"><h2>📍 Locations <span id="counter"></span></h2><p class="muted">One entry per monster or NPC name. Spawn count shows known locations; search for a specific target.</p><div id="results"></div></section>
+<section class="panel"><h2>🔎 Selected location</h2><div id="detail" class="detail">Select a marker or a result.</div></section></div>
+<footer>VoLuMaX Gaming · Classic Interlude reference data · The terrain illustration may be subject to third-party rights; obtain permission before public redistribution.</footer>
+</main><script>
+'use strict';
+const ROOT='https://ydbvqkccuwgskrcdosxv.supabase.co/rest/v1/';
+const API=location.hostname.endsWith('.discordsays.com')?'/supabase/rest/v1/':ROOT;
+const KEY='sb_publishable_2yNbsb6OAR5IyFoPhwVL2A_WVpOmnBa';
+const $=x=>document.getElementById(x),W=1812,H=2620;
+const BOUNDS={"minx": -129999.855, "maxx": 234482.75, "miny": -265176.086, "maxy": 264583.735};
+const COLORS={raid:'#f7a36a',npc:'#6ee2c4',quest:'#e1b3f2',monster:'#f2d26b',questmob:'#fb688b',dungeon:'#81a7ff'};
+let mode='raid',items=[],selected=null,request=0,cache=new Map(),questNPCs=null,questMobs=null,lootCache=new Map(),lootToken=0;
+let scale=1,tx=0,ty=0,baseWidth=0,baseHeight=0,terrainOK=false;
+const clean=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Math.round(Number(n)||0).toLocaleString('en-US');
+function pixel(x,y){return {x:(x-BOUNDS.minx)/(BOUNDS.maxx-BOUNDS.minx)*W,y:(y-BOUNDS.miny)/(BOUNDS.maxy-BOUNDS.miny)*H}}
+function status(s){$('status').textContent=s}
+function url(table,select,extra=''){return API+table+'?select='+encodeURIComponent(select)+(extra?'&'+extra:'')}
+async function page(table,select,extra='',limit=700,max=10000){let a=[];for(let off=0;off<max;off+=limit){let r=await fetch(url(table,select,extra)+'&limit='+limit+'&offset='+off,{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw Error(table+': HTTP '+r.status);let part=await r.json();if(!Array.isArray(part))throw Error('Invalid API response');a.push(...part);if(part.length<limit)break}return a}
+function normalize(r,k){let x=Number(r.x),y=Number(r.y);return {id:Number(r.npc_id??r.monster_id??r.id),name:String(r.name??'Unknown'),x,y,z:Number(r.z??0),level:Number(r.level??0),type:r.npc_type||k,zone:r.hunting_zone||r.region||r.zone_label||'',kind:k,respawn:Number(r.respawn_delay_seconds||0),respawnRandom:Number(r.respawn_random_seconds||0),hp:r.hp==null?null:Number(r.hp),mp:r.mp==null?null:Number(r.mp),xp:r.server_xp==null?null:Number(r.server_xp),sp:r.server_sp==null?null:Number(r.server_sp),aggressive:r.aggressive??null,grade:r.grade||null}}
+async function getData(){const q=$('query').value.trim(),low=Number($('lo').value)||1,high=Number($('hi').value)||85;
+ if(mode==='raid'){
+  if(!cache.has('raid')){const [sp,ms]=await Promise.all([page('raid_boss_spawns','monster_id,x,y,z,region,hunting_zone,respawn_delay_seconds,respawn_random_seconds','order=id.asc'),page('navigator_monsters','id,name,level,npc_type,hp,mp,server_xp,server_sp,aggressive','npc_type=in.(RaidBoss,GrandBoss)&order=id.asc')]);const ref=new Map(ms.map(x=>[Number(x.id),x]));cache.set('raid',sp.map(r=>normalize({...r,name:ref.get(Number(r.monster_id))?.name||'Raid Boss #'+r.monster_id,...(ref.get(Number(r.monster_id))||{}) ,monster_id:r.monster_id},'raid')))}
+  return cache.get('raid').filter(x=>x.level>=low&&x.level<=high&&(!q||x.name.toLowerCase().includes(q.toLowerCase())))}
+ if(['npc','quest','dungeon'].includes(mode)){
+  if(!cache.has('npcs')){let rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=not.in.(Monster,FeedableBeast,FriendlyMob)&order=npc_id.asc');cache.set('npcs',rows.map(r=>normalize(r,'npc')))}
+  let rows=cache.get('npcs');if(mode==='quest'){if(!questNPCs){questNPCs=new Set((await page('quest_involved_npcs','npc_id')).map(x=>Number(x.npc_id)))}rows=rows.filter(x=>questNPCs.has(x.id)).map(x=>({...x,kind:'quest'}))}
+  else if(mode==='dungeon')rows=rows.filter(x=>/DungeonGatekeeper|SepulcherNpc|Teleporter|SignsPriest/i.test(x.type+' '+x.name)).map(x=>({...x,kind:'dungeon'}));
+  return rows.filter(x=>!q||x.name.toLowerCase().includes(q.toLowerCase()))}
+ const deepMonsterId=Number(new URLSearchParams(location.search).get('monster_id')||0);
+ if((mode==='monster'||mode==='questmob')&&deepMonsterId>0&&!q){
+  const rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=in.(Monster,FeedableBeast,FriendlyMob)&npc_id=eq.'+deepMonsterId,500,500);
+  return rows.map(x=>normalize(x,mode));
+ }
+ if(q.replace(/\s/g,'').length<2){status('⚔️ Enter at least 2 letters of a monster name and tap Search map.');return []}
+ const safe=q.replace(/[%*,()]/g,'').trim();if(safe.length<2)return [];
+ const rows=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_type=in.(Monster,FeedableBeast,FriendlyMob)&name=ilike.*'+encodeURIComponent(safe)+'*&order=npc_id.asc',500,5000);
+ if(mode==='questmob'){if(!questMobs)questMobs=new Set((await page('quest_involved_monsters','monster_id')).map(r=>Number(r.monster_id)));return rows.filter(x=>questMobs.has(Number(x.npc_id))).map(x=>normalize(x,'questmob'))}
+ return rows.map(x=>normalize(x,'monster'))}
+function metrics(){const el=$('world');baseWidth=el.clientWidth;baseHeight=baseWidth*H/W;$('stage').style.height=baseHeight+'px'}
+function clampPosition(){const el=$('world'),visibleW=el.clientWidth,visibleH=el.clientHeight;const sw=baseWidth*scale,sh=baseHeight*scale;
+ tx=sw<=visibleW?(visibleW-sw)/2:Math.min(0,Math.max(visibleW-sw,tx));ty=sh<=visibleH?(visibleH-sh)/2:Math.min(0,Math.max(visibleH-sh,ty));}
+function updateTransform(){if(!baseWidth)metrics();clampPosition();$('stage').style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';$('viewportNote').textContent='Zoom '+Math.round(scale*100)+'% · '+items.length+' locations · drag with one finger, pinch with two';}
+function fit(){metrics();scale=1;tx=0;ty=0;updateTransform();drawPins()}
+function zoom(f,cx,cy){let el=$('world');cx??=el.clientWidth/2;cy??=el.clientHeight/2;let next=Math.max(1,Math.min(12,scale*f)),ratio=next/scale;tx=cx-(cx-tx)*ratio;ty=cy-(cy-ty)*ratio;scale=next;updateTransform();refreshPinSizes();drawPins()}
+function focus(row){selected=row;const pos=pixel(row.x,row.y);let el=$('world');scale=Math.max(2.2,Math.min(6,scale));tx=el.clientWidth/2-pos.x/W*baseWidth*scale;ty=el.clientHeight/2-pos.y/H*baseHeight*scale;updateTransform();render();showQuick();refreshPinSizes()}
+function wikiLink(x){return './index.html?monster_id='+encodeURIComponent(x.id)+'#monster-'+encodeURIComponent(x.id)}
+function npcLink(x){return './npc-details.html?npc_id='+encodeURIComponent(x.id)}
+function nice(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}
+function showQuick(){
+ const q=$('mapQuick'),x=selected;
+ if(!x){q.style.display='none';return}
+ q.style.display='block';
+ $('mapQuickName').textContent=x.name;
+ $('mapQuickMeta').textContent=(x.level?'LVL '+x.level+' · ':'')+(x.kind==='raid'?'Raid Boss · ':'')+(x.zone||x.type||'Unknown area');
+ $('mapQuickFull').href=(x.kind==='raid'||x.kind==='monster'||x.kind==='questmob')?wikiLink(x):npcLink(x);
+ $('mapQuickFull').textContent=x.kind==='raid'?'📖 View Full Details ↗':(x.kind==='monster'||x.kind==='questmob'?'📖 View Mob Details ↗':'📜 NPC & Related Quests ↗');
+ if(x.kind==='raid'){
+   const resp=x.respawn?(x.respawn/3600).toFixed(1)+'h'+(x.respawnRandom?' ± '+(x.respawnRandom/3600).toFixed(1)+'h':''):'Unknown';
+   const hp=x.hp==null?'Unknown':nice(x.hp),xp=x.xp==null?'Unknown':nice(x.xp);
+   const lines=[['⏱️','Respawn',resp],['❤️','HP',hp],['✨','XP ×3',xp],['⚔️','Weakness','Not verified']];
+   $('mapQuickStats').innerHTML='<div class="quicklines">'+lines.map(a=>'<div class="quickline"><span class="quickicon">'+a[0]+'</span><span class="quicklabel">'+a[1]+'</span><strong>'+clean(a[2])+'</strong></div>').join('')+'</div>';
+ }else{
+   $('mapQuickStats').innerHTML='<div class="quicklines"><div class="quickline"><span class="quickicon">📍</span><span class="quicklabel">Coordinates</span><strong>X '+fmt(x.x)+' · Y '+fmt(x.y)+'</strong></div></div>';
+ }
+}
+function refreshPinSizes(){document.querySelectorAll('#pins circle').forEach(c=>c.setAttribute('r',Math.max(1.4,Number(c.classList.contains('selected')?10:6)/scale).toFixed(2)))}
+function drawPins(){
+ // Cluster nearby points in the image, using screen-pixel spacing at the current zoom.
+ // Preserve underlying coordinates and monster IDs for the details link.
+ const cell=25/Math.max(1,scale);
+ const buckets=new Map();
+ items.forEach((x,i)=>{
+   if(!Number.isFinite(x.x)||!Number.isFinite(x.y))return;
+   const p=pixel(x.x,x.y);
+   if(p.x<0||p.x>W||p.y<0||p.y>H)return;
+   const key=Math.floor(p.x/W*baseWidth/cell)+','+Math.floor(p.y/H*baseHeight/cell);
+   let b=buckets.get(key);
+   if(!b){b={sumx:0,sumy:0,count:0,first:i,selectedIndex:-1};buckets.set(key,b)}
+   b.sumx+=p.x;b.sumy+=p.y;b.count++;
+   if(selected===x)b.selectedIndex=i;
+ });
+ const html=[];
+ for(const b of buckets.values()){
+   const i=b.selectedIndex>=0?b.selectedIndex:b.first;
+   const x=items[i],on=b.selectedIndex>=0;
+   const p=on?pixel(x.x,x.y):{x:b.sumx/b.count,y:b.sumy/b.count};
+   const r=(b.count>1?10:5.5)/Math.max(1,scale);
+   html.push('<circle data-pos="'+i+'" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+Math.max(1.6,r).toFixed(2)+'" fill="'+COLORS[x.kind]+'" class="'+(on?'selected ':'')+(b.count>1?'cluster':'')+'"><title>'+clean(x.name)+(b.count>1?' · '+b.count+' nearby spawn points':'')+'</title></circle>');
+   if(b.count>1){html.push('<text x="'+p.x.toFixed(1)+'" y="'+(p.y+3.5/Math.max(1,scale)).toFixed(1)+'" text-anchor="middle" style="font-size:'+(10/Math.max(1,scale)).toFixed(2)+'px">'+(b.count>99?'99+':b.count)+'</text>')}
+ }
+ $('pins').innerHTML=html.join('');
+}
+function render(){drawPins();$('counter').textContent='('+fmt(items.length)+')';const unique=new Map();
+ items.forEach((x,i)=>{const k=x.kind+':'+x.name.trim().toLocaleLowerCase();let g=unique.get(k);if(!g){g={x,i,n:0};unique.set(k,g)}g.n++});
+ const groups=[...unique.values()].sort((a,b)=>a.x.name.localeCompare(b.x.name)||a.x.id-b.x.id);
+ $('counter').textContent='('+fmt(groups.length)+' types / '+fmt(items.length)+' locations)';
+ $('results').innerHTML=groups.slice(0,40).map(g=>{const x=g.x;return '<button class="result '+(selected?.id===x.id?'active':'')+'" data-i="'+g.i+'"><b>'+clean(x.name)+'</b><small>'+(x.level?'LVL '+x.level+' · ':'')+fmt(g.n)+' spawn location'+(g.n!==1?'s':'')+(x.zone?' · '+clean(x.zone):'')+'</small></button>'}).join('')||'<p class="muted">No results. Try another layer or search term.</p>';
+ if(!selected){$('detail').textContent='Select a marker or a result.';return}const x=selected;let to=x.kind==='raid'?wikiLink(x):x.kind==='monster'||x.kind==='questmob'?'./index.html?monster_id='+x.id:npcLink(x);
+ $('detail').innerHTML='<h3>'+clean(x.name)+'</h3><span class="chip">'+clean(x.kind.toUpperCase())+'</span>'+(x.level?'<span class="chip">LVL '+x.level+'</span>':'')+'<p>📍 X '+fmt(x.x)+' · Y '+fmt(x.y)+' · Z '+fmt(x.z)+'</p>'+(x.zone?'<p>'+clean(x.zone)+'</p>':'')+(x.respawn?'<p class="muted">Reference respawn '+(x.respawn/3600).toFixed(1)+' h</p>':'')+'<small>Classic reference, not Elysion verified.</small><p><a href="'+clean(to)+'">Open relevant Academy guide ↗</a></p>';}
+async function load(){let token=++request;status('⏳ Loading '+mode+' locations…');try{let d=await getData();if(token!==request)return;items=d.filter(x=>Number.isFinite(x.x)&&Number.isFinite(x.y));selected=null;render();showQuick();fit();
+ const params=new URLSearchParams(location.search);
+ const wantedId=Number(params.get(mode==='raid'?'boss_id':mode==='monster'||mode==='questmob'?'monster_id':'npc_id')||0);
+ if(wantedId>0){
+   const target=items.find(x=>x.id===wantedId);
+   if(target){focus(target);requestAnimationFrame(()=>{$('world').scrollIntoView({block:'center',behavior:'instant'})});}
+   else status('⚠️ Requested target #'+wantedId+' not found in current filters. Clear level filters and retry.');
+ }
+ status('🟢 '+fmt(items.length)+' '+mode+' locations loaded from VoLuMaX Database. '+(items.length>800?'Nearby spawn points are clustered; zoom in to separate them.':''))}catch(e){if(token!==request)return;status('⚠️ '+e.message+' — try refresh or check database access');items=[];selected=null;render();showQuick()}}
+$('terrain').addEventListener('load',()=>{$('imageState').textContent='✅ Interlude terrain loaded automatically from GitHub · '+$('terrain').naturalWidth+' × '+$('terrain').naturalHeight+' px';fit()});
+$('terrain').addEventListener('error',()=>{$('imageState').textContent='⚠️ Terrain file missing. Upload interlude-world-map.png next to maps-v2-2.html in the repository.'});
+$('tabs').addEventListener('click',e=>{let btn=e.target.closest('[data-mode]');if(!btn)return;mode=btn.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));$('query').value='';load()});
+$('searchBtn').onclick=load;$('query').onkeydown=e=>{if(e.key==='Enter')load()};$('resetBtn').onclick=fit;$('zoomIn').onclick=()=>zoom(1.6);$('zoomOut').onclick=()=>zoom(1/1.6);
+$('results').onclick=e=>{let row=e.target.closest('[data-i]');if(row){const x=items[Number(row.dataset.i)];if(x)focus(x)}};
+$('pins').onclick=e=>{if(suppressTap)return;let row=e.target.closest('[data-pos]');if(row){const x=items[Number(row.dataset.pos)];if(x)focus(x)}};
+$('mapQuickDetails').onclick=()=>{$('detail').scrollIntoView({block:'start',behavior:'smooth'})};$('mapQuickClose').onclick=()=>{$('mapQuick').style.display='none'};
+const world=$('world');
+// Track all touches: single-finger drag, two-finger pinch anchored under the fingers.
+const pointers=new Map();let gesture=null,suppressTap=false;
+function pointerCentre(){const a=[...pointers.values()];return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y)}}
+function localXY(x,y){const r=world.getBoundingClientRect();return {x:x-r.left,y:y-r.top}}
+function beginGesture(){const vals=[...pointers.values()];if(vals.length>=2){const c=pointerCentre(),local=localXY(c.x,c.y);gesture={type:'pinch',distance:Math.max(c.d,1),scale,tx,ty,mapX:(local.x-tx)/scale,mapY:(local.y-ty)/scale};suppressTap=true}
+else if(vals.length===1){const a=vals[0];gesture={type:'pan',x:a.x,y:a.y,tx,ty,moved:false}}else gesture=null}
+world.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;if(e.target.closest('circle')&&pointers.size===0)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});world.setPointerCapture(e.pointerId);beginGesture()});
+world.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!gesture)return;
+if(gesture.type==='pinch'&&pointers.size>=2){const c=pointerCentre(),local=localXY(c.x,c.y);scale=Math.max(1,Math.min(12,gesture.scale*c.d/gesture.distance));tx=local.x-gesture.mapX*scale;ty=local.y-gesture.mapY*scale;updateTransform();refreshPinSizes()}
+else if(gesture.type==='pan'&&pointers.size===1){const a=[...pointers.values()][0];if(Math.hypot(a.x-gesture.x,a.y-gesture.y)>7){gesture.moved=true;suppressTap=true}if(gesture.moved){tx=gesture.tx+(a.x-gesture.x);ty=gesture.ty+(a.y-gesture.y);updateTransform()}}});
+function endPointer(e){pointers.delete(e.pointerId);beginGesture();if(!pointers.size){setTimeout(()=>{suppressTap=false},70)}}
+world.addEventListener('pointerup',e=>{endPointer(e);drawPins()});world.addEventListener('pointercancel',e=>{endPointer(e);drawPins()});
+
+world.addEventListener('wheel',e=>{e.preventDefault();let r=world.getBoundingClientRect();zoom(e.deltaY>0?0.82:1.22,e.clientX-r.left,e.clientY-r.top)},{passive:false});
+window.addEventListener('resize',()=>{let was=scale;metrics();scale=was;updateTransform()});
+let args=new URLSearchParams(location.search);if(['raid','npc','quest','monster','questmob','dungeon'].includes(args.get('mode')))mode=args.get('mode');
+if(mode==='raid'&&args.has('boss_id')){$('lo').value='1';$('hi').value='85';$('query').value='';}
+document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));if(args.get('search'))$('query').value=args.get('search');
+fit();if($('terrain').complete&&$('terrain').naturalWidth){$('imageState').textContent='✅ Map PNG loaded';fit()}load();
+
+/* v2.9 Leveling mode extension on top of the established v2.8 map. */
+let lvGoal='xp',lvRecommendations=[];
+/* Mount Leveling as a peer category inside Find Locations; no separate top card. */
+const levelTabs=document.getElementById('tabs');
+const levelModePanel=document.getElementById('levelMode');
+const levelTab=document.createElement('button');levelTab.id='levelTab';levelTab.type='button';levelTab.textContent='⚔️ Leveling';levelTabs.appendChild(levelTab);
+levelTabs.after(levelModePanel);levelModePanel.open=true;levelModePanel.hidden=true;
+const levelLocationPanel=levelTabs.closest('section.panel');
+levelTab.addEventListener('click',()=>{levelModePanel.hidden=false;levelLocationPanel.classList.add('level-selected');levelTab.classList.add('active');levelTabs.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));});
+levelTabs.addEventListener('click',e=>{if(e.target.closest('[data-mode]')){levelModePanel.hidden=true;levelLocationPanel.classList.remove('level-selected');levelTab.classList.remove('active');}});
+const lvEl=x=>document.getElementById(x);
+const lvEscape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function lvBounds(){const v=Math.max(1,Math.min(80,Number(lvEl('lvCharacter').value)||28));
+ if(!lvEl('lvOverride').checked){lvEl('lvMin').value=Math.max(1,v-5);lvEl('lvMax').value=Math.min(85,v+2)}
+ return {char:v,lo:lvEl('lvOverride').checked?Math.max(1,Number(lvEl('lvMin').value)||1):Math.max(1,v-5),hi:lvEl('lvOverride').checked?Math.min(85,Number(lvEl('lvMax').value)||85):Math.min(85,v+2)}};
+function lvMessage(text){lvEl('lvState').textContent=text}
+lvEl('lvCharacter').addEventListener('input',lvBounds);
+lvEl('lvOverride').addEventListener('change',()=>{const b=lvEl('lvOverride').checked;lvEl('lvMin').disabled=!b;lvEl('lvMax').disabled=!b;lvBounds()});
+lvEl('lvGoals').addEventListener('click',e=>{let b=e.target.closest('[data-goal]');if(!b)return;lvGoal=b.dataset.goal;lvEl('lvGoals').querySelectorAll('button').forEach(t=>t.classList.toggle('chosen',t===b))});
+lvBounds();
+function lvScore(m,level,cls,party,goal,adena){const gap=Math.abs(m.level-level),xp=Math.max(0,Number(m.server_xp||0)),hp=Math.max(1,Number(m.hp||1));
+ let score=goal==='xp'?Math.min(70,(xp/hp)*3):goal==='spoil'?Math.min(24,Number(m.spoil_count||0)*4):(adena==null?0:Math.min(55,adena/30));
+ score+=Math.max(0,9-gap*1.8);
+ if(cls==='spoiler'&&Number(m.spoil_count||0)>0)score+=6;
+ if(['mage','archer','healer','support'].includes(cls)&&m.aggressive===true)score-=party==='solo'?5:1;
+ if(cls==='tank'&&m.aggressive===true)score+=2;
+ if(party==='party'&&m.aggressive===true)score+=2;
+ return score;
+}
+async function lvAdena(ids){const values=new Map();for(let k=0;k<ids.length;k+=70){let idlist=ids.slice(k,k+70);const endpoint=API+'item_farming_sources?select=monster_id,loot_type,server_min_amount,server_max_amount,chance_percent&loot_type=eq.adena&monster_id=in.('+idlist.join(',')+')&limit=1000';
+ let response=await fetch(endpoint,{headers:{apikey:KEY,Accept:'application/json'}});if(!response.ok)throw Error('Adena sources '+response.status);
+ for(const d of await response.json()){const n=(Number(d.server_min_amount||0)+Number(d.server_max_amount||0))/2*Math.min(1,Math.max(0,Number(d.chance_percent||0)/100));values.set(Number(d.monster_id),(values.get(Number(d.monster_id))||0)+n)}}return values;}
+async function lvFind(){const b=lvBounds();if(b.lo>b.hi){lvMessage('⚠️ Minimum monster LVL cannot exceed maximum.');return}let cls=lvEl('lvClass').value,party=lvEl('lvParty').value,beh=lvEl('lvBehaviour').value;
+ lvEl('lvFind').disabled=true;lvMessage('⏳ Finding level-matched monsters and hunting zones…');lvEl('lvResults').replaceChildren();
+ try{const all=await page('navigator_monsters','id,name,level,npc_type,hunting_zone,region,server_xp,hp,spoil_count,aggressive',`npc_type=eq.Monster&level=gte.${b.lo}&level=lte.${b.hi}&order=id.asc`,700,3500);
+ const mobs=all.filter(m=>m.hunting_zone&&m.region&&(! (beh==='passive'&&m.aggressive===true))&&(!(beh==='aggressive'&&m.aggressive!==true)));
+ const money=lvGoal==='adena'?await lvAdena([...new Set(mobs.map(m=>Number(m.id)))]):new Map();
+ const groups=new Map();for(let m of mobs){if(lvGoal==='spoil'&&!(Number(m.spoil_count)>0))continue;
+ const key=m.hunting_zone+'\u0001'+m.region;let g=groups.get(key);if(!g){g={zone:m.hunting_zone,region:m.region,mobs:[],score:0};groups.set(key,g)}
+ g.mobs.push(m);g.score+=lvScore(m,b.char,cls,party,lvGoal,money.get(Number(m.id)));}
+ lvRecommendations=[...groups.values()].map(g=>({...g,score:g.score/Math.sqrt(g.mobs.length)+Math.min(16,g.mobs.length)})).sort((a,b)=>b.score-a.score).slice(0,5);
+ if(!lvRecommendations.length){lvMessage('No matching hunting zones. Try a wider monster level range or different behaviour.');return}
+ lvMessage('✅ '+lvRecommendations.length+' recommended hunting zones · mob LVL '+b.lo+'–'+b.hi+' · '+mobs.length+' candidate monster types');
+ lvEl('lvResults').innerHTML=lvRecommendations.map((g,i)=>'<div class="lvzone"><b>'+(i+1)+'. 📍 '+lvEscape(g.zone)+'</b><small>'+lvEscape(g.region)+' · '+g.mobs.length+' matched monster types'+(lvGoal==='adena'?' · Adena reference ranking':'')+'</small><button type="button" data-lv-zone="'+i+'">🗺️ Show on Map</button> <a href="./index.html?monster_id='+encodeURIComponent(g.mobs[0].id)+'#monster-'+encodeURIComponent(g.mobs[0].id)+'" style="font-size:12px;color:#f1d08c">Example mob Wiki ↗</a></div>').join('');
+ }catch(err){lvMessage('⚠️ '+err.message+' — try again');}finally{lvEl('lvFind').disabled=false}}
+lvEl('lvFind').addEventListener('click',lvFind);
+lvEl('lvResults').addEventListener('click',async e=>{const btn=e.target.closest('[data-lv-zone]');if(!btn)return;const z=lvRecommendations[Number(btn.dataset.lvZone)];if(!z)return;
+ btn.disabled=true;lvMessage('⏳ Loading known spawn coordinates for '+z.zone+'…');
+ try{const idlist=[...new Set(z.mobs.map(m=>Number(m.id)))];let spots=[];
+ for(let k=0;k<idlist.length;k+=40){const chunk=idlist.slice(k,k+40);const part=await page('interlude_npc_fixed_locations','npc_id,name,npc_type,x,y,z,zone_label','npc_id=in.('+chunk.join(',')+')&npc_type=in.(Monster,FeedableBeast,FriendlyMob)&order=npc_id.asc',700,5000);spots.push(...part)}
+ const ref=new Map(z.mobs.map(m=>[Number(m.id),m]));const matched=spots.filter(row=>ref.has(Number(row.npc_id))).map(row=>normalize({...row,...ref.get(Number(row.npc_id)),npc_id:Number(row.npc_id),x:row.x,y:row.y,z:row.z},'monster')).filter(m=>Number.isFinite(m.x)&&Number.isFinite(m.y));
+ if(!matched.length){lvMessage('ℹ️ '+z.zone+' has '+z.mobs.length+' known monster types, but no matching spawn coordinates in our map database. Wiki details remain available.');return}
+ ++request;mode='monster';document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode==='monster'));
+ items=matched;selected=null;render();showQuick();fit();
+ const px=matched.map(m=>pixel(m.x,m.y)).filter(p=>p.x>=0&&p.x<=W&&p.y>=0&&p.y<=H);
+ if(px.length){const cx=px.reduce((a,p)=>a+p.x,0)/px.length,cy=px.reduce((a,p)=>a+p.y,0)/px.length;
+ scale=3;tx=$('world').clientWidth/2-cx/W*baseWidth*scale;ty=$('world').clientHeight/2-cy/H*baseHeight*scale;updateTransform();drawPins()}
+ lvMessage('✅ '+matched.length+' stored spawn locations shown for '+z.zone+'. Select a marker for mob details.');status('🟢 Leveling Mode: '+z.zone+' · '+matched.length+' stored spawn locations (Classic reference).');
+ $('world').scrollIntoView({block:'center',behavior:'smooth'});
+ }catch(err){lvMessage('⚠️ Unable to load coordinates: '+err.message)}finally{btn.disabled=false}});
+
+
+/* VoLuMaX 2.11: monster loot and unverified zone fallback. */
+const lv211Cache=new Map(); let lv211Selected=0, lv211Zone=null;
+const lv211Style=document.createElement('style');lv211Style.textContent=`
+#mapQuick{max-height:85%;overflow:auto}#mapQuick .loot-subhead{color:#f2d18e;font-weight:700;font-size:13px;margin:9px 0 5px}
+#mapQuick .loot-grid{display:flex;flex-wrap:wrap;gap:6px}#mapQuick .loot-item{display:flex;align-items:center;gap:5px;min-width:0;background:#213a50;border:1px solid #4d6982;border-radius:8px;padding:4px 7px;font-size:11px;max-width:100%;overflow-wrap:anywhere}
+#mapQuick .loot-item img{width:26px;height:26px;object-fit:contain;background:#334353;border-radius:4px}
+#mapQuick .loot-item strong{font-weight:500}#mapQuick .loot-item em{font-style:normal;color:#e3c484;white-space:nowrap}
+#mapQuick .loot-info{font-size:11px;color:#b8cde0;padding-top:5px}#mapQuick .loot-summary{display:flex;gap:10px;flex-wrap:wrap;color:#ebd2a2;font-size:12px;margin:6px 0}
+#lvZoneFallback{display:none;margin:12px 0;padding:12px;border:1px solid #d6ae6f;border-radius:12px;background:#152e45;color:#d6e3ec}
+#lvZoneFallback h3{color:#f0d08b;margin:2px 0 7px}#lvZoneFallback .zone-monsters{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:7px}
+#lvZoneFallback button{border:1px solid #5c7892;color:#e5d4b2;background:#193b57;border-radius:9px;padding:9px;text-align:left;cursor:pointer}
+#pins .zone-marker{pointer-events:all;cursor:pointer}
+`;document.head.appendChild(lv211Style);
+const fallback=document.createElement('section');fallback.id='lvZoneFallback';
+fallback.innerHTML='<h3>📍 Approximate hunting zone</h3><p>Spawn coordinates not available. Only the area on the illustrated Classic map is indicated; this is NOT an exact mob location.</p><div class="zone-monsters"></div>';
+const mapParent=document.getElementById('world')?.closest('section.panel');
+if(mapParent)mapParent.after(fallback);
+function lv211Escape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function lv211LootHtml(rows){const types=[['drop','📦 DROP'],['spoil','⛏️ SPOIL']];return types.map(([kind,title])=>{
+const filtered=rows.filter(r=>r.loot_type===kind).sort((a,b)=>Number(b.chance_percent||0)-Number(a.chance_percent||0));
+return '<div class="loot-subhead">'+title+' ('+filtered.length+')</div>'+(filtered.length?'<div class="loot-grid">'+filtered.slice(0,12).map(r=>'<div class="loot-item">'+(r.icon_url?'<img loading="lazy" alt="" src="'+lv211Escape(r.icon_url)+'">':'📦')+'<strong>'+lv211Escape(r.item_name)+'</strong> <em>'+Number(r.chance_percent||0).toFixed(2)+'%</em></div>').join('')+'</div>':'<div class="loot-info">No '+kind+' records in Classic database</div>')+(filtered.length>12?'<div class="loot-info">+'+(filtered.length-12)+' more in Wiki</div>':'');}).join('');}
+async function lv211Fetch(id){if(!lv211Cache.has(id)){let r=await fetch(url('item_farming_sources','item_name,loot_type,chance_percent,icon_url','monster_id=eq.'+id+'&loot_type=in.(drop,spoil)&order=chance_percent.desc&limit=120'),{headers:{apikey:KEY,Accept:'application/json'}});if(!r.ok)throw Error('Loot HTTP '+r.status);lv211Cache.set(id,await r.json());}return lv211Cache.get(id);}
+const lv211BaseQuick=showQuick;
+showQuick=function(){lv211BaseQuick();const x=selected;if(!x||!['monster','questmob'].includes(x.kind))return;
+ const key=Number(x.id),ticket=++lv211Selected;
+ const stats=document.getElementById('mapQuickStats');stats.innerHTML='<div class="loot-summary">'+(x.level?'⚔️ LVL '+x.level+' · ':'')+(x.hp!=null?'❤️ HP '+nice(x.hp)+' · ':'')+(x.xp!=null?'✨ XP '+nice(x.xp):'')+'</div><div class="loot-info">⏳ Loading DROP / SPOIL…</div>';
+ lv211Fetch(key).then(rows=>{if(ticket!==lv211Selected||Number(selected?.id)!==key)return;stats.innerHTML='<div class="loot-summary">'+(x.level?'⚔️ LVL '+x.level+' · ':'')+(x.hp!=null?'❤️ HP '+nice(x.hp)+' · ':'')+(x.xp!=null?'✨ XP '+nice(x.xp):'')+'</div>'+lv211LootHtml(rows)+'<div class="loot-info">Classic reference rates. Full loot list in Wiki.</div>';}).catch(e=>{if(ticket===lv211Selected)stats.innerHTML='<div class="loot-info">⚠️ '+lv211Escape(e.message)+' · full details remain available in Wiki</div>';});
+};
+// Selected Location panel is compact too (no raw XYZ for ordinary monsters).
+const lv211BaseRender=render;
+render=function(){lv211BaseRender();if(selected&&['monster','questmob'].includes(selected.kind)){
+let x=selected;let d=document.getElementById('detail');d.innerHTML='<h3>'+lv211Escape(x.name)+'</h3><p>⚔️ LVL '+x.level+(x.zone?' · '+lv211Escape(x.zone):'')+'</p><p class="muted">📦 DROP and ⛏️ SPOIL: see the card on the map.</p><p><a href="'+wikiLink(x)+'">📖 Complete monster Wiki ↗</a></p>';}
+};
+// No exact spawn points in Orc Barracks reference: make a distinct approximation rather than inventing NPC coordinates.
+const lv211BaseDraw=drawPins;
+drawPins=function(){lv211BaseDraw();if(!lv211Zone)return;const p=document.getElementById('pins');if(!p)return;
+const fx=W*0.085,fy=H*0.712;
+p.insertAdjacentHTML('beforeend','<circle class="zone-marker" data-zone-approx="1" cx="'+fx+'" cy="'+fy+'" r="'+Math.max(2.5,10/Math.max(1,scale))+'" fill="#f3c267" stroke="#17354c" stroke-width="3"><title>Orc Barracks · approximate illustrated area, not a known spawn</title></circle>');};
+const lv211BaseFocus=focus;
+focus=function(row){lv211Zone=null;fallback.style.display='none';lv211BaseFocus(row);};
+const lv211BaseLoad=load;
+load=async function(){lv211Zone=null;fallback.style.display='none';return lv211BaseLoad();};
+function lv211ShowOrc(z){lv211Zone=z;items=[];selected=null;render();showQuick();fit();
+// The source image labels the Orc Barracks in its lower-western area. Visual pointer only.
+scale=3.4;const fx=W*0.085,fy=H*0.712;tx=document.getElementById('world').clientWidth/2-fx/W*baseWidth*scale;ty=document.getElementById('world').clientHeight/2-fy/H*baseHeight*scale;updateTransform();drawPins();
+fallback.style.display='block';fallback.querySelector('h3').textContent='📍 Orc Barracks – '+z.mobs.length+' matching monster types';
+fallback.querySelector('.zone-monsters').innerHTML=z.mobs.map(m=>'<button type="button" data-monster-loot="'+Number(m.id)+'">⚔️ '+lv211Escape(m.name)+' · LVL '+Number(m.level)+'</button>').join('');
+lvMessage('ℹ️ Orc Barracks: no confirmed spawn points in the coordinate database. Showing its approximate map region and '+z.mobs.length+' monster types with Wiki loot details.');
+document.getElementById('world').scrollIntoView({behavior:'smooth',block:'center'});
+}
+fallback.addEventListener('click',e=>{let b=e.target.closest('[data-monster-loot]');if(!b)return;const id=Number(b.dataset.monsterLoot);const m=lv211Zone?.mobs.find(m=>Number(m.id)===id);if(!m)return;
+let target=document.getElementById('lv211LootBox');if(!target){target=document.createElement('div');target.id='lv211LootBox';fallback.appendChild(target);}target.innerHTML='<h3>'+lv211Escape(m.name)+' · LVL '+m.level+'</h3><p>Loading DROP / SPOIL…</p>';
+lv211Fetch(id).then(rows=>{target.innerHTML='<h3>'+lv211Escape(m.name)+' · LVL '+m.level+'</h3>'+lv211LootHtml(rows)+'<p><a href="'+wikiLink({id})+'">📖 Full Wiki Details ↗</a></p>';}).catch(e=>target.textContent='Unable to load loot: '+e.message);
+target.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+// Listen before older Show on Map handler; only intercept Orc Barracks, which has no stored coordinates.
+lvEl('lvResults').addEventListener('click',e=>{let b=e.target.closest('[data-lv-zone]');if(!b)return;const z=lvRecommendations[Number(b.dataset.lvZone)];if(!z||z.zone.toLowerCase()!=='orc barracks')return;e.preventDefault();e.stopImmediatePropagation();lv211ShowOrc(z);},true);
+// Keep -2/+2 on any level adjustment and when opening the panel.
+lvBounds=function(){let v=Math.max(1,Math.min(80,Number(lvEl('lvCharacter').value)||28));if(!lvEl('lvOverride').checked){lvEl('lvMin').value=Math.max(1,v-2);lvEl('lvMax').value=Math.min(85,v+2);}return {char:v,lo:lvEl('lvOverride').checked?Math.max(1,Number(lvEl('lvMin').value)||1):Math.max(1,v-2),hi:lvEl('lvOverride').checked?Math.min(85,Number(lvEl('lvMax').value)||85):Math.min(85,v+2)};};lvBounds();
+const lv211Note=lvEl('lvAdvanced')?.querySelector('.lvnote');if(lv211Note)lv211Note.textContent='Default recommended mob LVL: character level −2 to +2. This is a conservative hunting recommendation, not a verified XP-penalty threshold. Custom min/max may be set above.';
+
+</script></body></html>
